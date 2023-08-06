@@ -19,20 +19,11 @@ from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-ROOT_DIR = os.path.dirname(BASE_DIR)
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# 중요한 key 값들을 분리해서 저장
-# 최상위 디렉토리를 secrets.json으로 설정
-SECRET_BASE_FILE = os.path.join(BASE_DIR, 'secrets.json')
-secrets = json.loads(open(SECRET_BASE_FILE).read())
-for key, value in secrets.items():
-    setattr(sys.modules[__name__], key, value)
-
 SECRET_KEY = 'django-insecure-%*u5pnqwl4i#3i_a(3yo80s4!+wv-c(%rto*m_9$d-!vk(x-jx'
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -50,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 
     # app
     'main',
@@ -59,6 +51,7 @@ INSTALLED_APPS = [
     #django rest framework
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+    'rest_framework.authtoken',
 
     # dj-rest-auth
     'dj_rest_auth',
@@ -75,7 +68,7 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
-AUTH_USER_MODEL = 'accounts.User'
+# AUTH_USER_MODEL = 'user.User'
 
 #Django rest framework 설정
 REST_FRAMEWORK = {
