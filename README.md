@@ -19,5 +19,5 @@
     python manage.py makemigrations
     python manage.py migrate
 
-### 3-5. 서버 실행
+### 서버 실행
     python manage.py runserver
