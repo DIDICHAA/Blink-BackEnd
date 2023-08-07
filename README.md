@@ -2,15 +2,18 @@
 
 ## 초기 셋팅
 ### 가상환경 생성
-    python -m venv {가상 환경 이름}
-
+    windows : python -m venv {가상 환경 이름}
+    mac : python 3 -m venv {가상 환경 이름}
     * 가상 환경 이름은 venv로 통일
 
 ### 가상환경 실행
-    source venv/Scripts/activate
+    windows : source venv/Scripts/activate
+    mac : source venv/bin/activate
+
 
 ### 라이브러리 설치
-    pip install -r requirements.txt
+    windows : pip install -r requirements.txt
+    mac : (추가바람)
 
     * 추가된 pip 어쩌구 있으면 'pip freeze > requirements.txt' 명령어 꼭 사용
 
