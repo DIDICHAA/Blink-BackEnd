@@ -19,12 +19,18 @@ from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = os.path.dirname(BASE_DIR)
+SECRET_BASE_FILE = os.path.join(BASE_DIR, 'secrets.json')
 
+secrets = json.loads(open(SECRET_BASE_FILE).read())
+for key, value in secrets.items():
+    setattr(sys.modules[__name__], key, value)
+
+AUTH_USER_MODEL = 'accounts.User'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%*u5pnqwl4i#3i_a(3yo80s4!+wv-c(%rto*m_9$d-!vk(x-jx'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -46,12 +52,13 @@ INSTALLED_APPS = [
     # app
     'main',
     'community',
-    'user',
+    'accounts',
 
     #django rest framework
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework.authtoken',
+
 
     # dj-rest-auth
     'dj_rest_auth',
@@ -68,27 +75,20 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
-# AUTH_USER_MODEL = 'user.User'
+AUTH_USER_MODEL = 'accounts.User'
 
 #Django rest framework 설정
 REST_FRAMEWORK = {
-    # (선택사항) : API 접근 권한을 설정하고 커스터마이징하는 부분, 일단 선택안함
-    # 'DEFAUL_PERMISSION_CLASSES': (
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
 }
 
-# USER 필드 설정에 맞게 변경
-# 기존 username 필드가 있던 User 모델을 email만 사용하도록 커스터마이징 했기 때문에,약간의 설정이 필요
-# ACCOUNT_USER_MODEL_USERNAME_FIELD = None # username 필드 사용 x
-ACCOUNT_EMAIL_REQUIRED = True  # email 필드 사용 o
-ACCOUNT_USERNAME_REQUIRED = False # username 필드 사용 x
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None # username 필드 사용 x
+ACCOUNT_EMAIL_REQUIRED = True            # email 필드 사용 o
+ACCOUNT_USERNAME_REQUIRED = False        # username 필드 사용 x
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_VERIFICATION = 'none' # 이메일 인증 x
 
 # JWT 환경 설정
 REST_USE_JWT = True

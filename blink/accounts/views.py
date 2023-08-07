@@ -1,20 +1,27 @@
-from django.shortcuts import render
-
-# Create your views here.
+import requests
+from django.shortcuts import redirect
 from django.conf import settings
-from user.models import User
-from allauth.socialaccount.models import SocialAccount
-from django.conf import settings
+from django.utils.translation import gettext_lazy as _
+from django.http import JsonResponse
+from json.decoder import JSONDecodeError
+from rest_framework import status
+from rest_framework.response import Response
 from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.google import views as google_view
+from allauth.socialaccount.providers.kakao import views as kakao_view
+from allauth.socialaccount.providers.github import views as github_view
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from django.http import JsonResponse 
-import requests
-from rest_framework import status
-from json.decoder import JSONDecodeError
-state = getattr(settings, 'STATE')
+from allauth.socialaccount.models import SocialAccount
+from .models import User
+
+
 BASE_URL = 'http://localhost:8000/'
 GOOGLE_CALLBACK_URI = BASE_URL + 'accounts/google/callback/'
+KAKAO_CALLBACK_URI = BASE_URL + 'accounts/kakao/callback/'
+GITHUB_CALLBACK_URI = BASE_URL + 'accounts/github/callback/'
+
+state = getattr(settings, 'STATE')
+
 
 def google_login(request):
     """
@@ -23,6 +30,7 @@ def google_login(request):
     scope = "https://www.googleapis.com/auth/userinfo.email"
     client_id = getattr(settings, "SOCIAL_AUTH_GOOGLE_CLIENT_ID")
     return redirect(f"https://accounts.google.com/o/oauth2/v2/auth?client_id={client_id}&response_type=code&redirect_uri={GOOGLE_CALLBACK_URI}&scope={scope}")
+
 
 def google_callback(request):
     client_id = getattr(settings, "SOCIAL_AUTH_GOOGLE_CLIENT_ID")
@@ -81,8 +89,11 @@ def google_callback(request):
         accept_json = accept.json()
         accept_json.pop('user', None)
         return JsonResponse(accept_json)
-    
+
+
 class GoogleLogin(SocialLoginView):
     adapter_class = google_view.GoogleOAuth2Adapter
     callback_url = GOOGLE_CALLBACK_URI
     client_class = OAuth2Client
+
+
