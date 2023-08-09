@@ -85,10 +85,17 @@ REST_FRAMEWORK = {
     ),
 }
 
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None # username 필드 사용 x
-ACCOUNT_EMAIL_REQUIRED = True            # email 필드 사용 o
-ACCOUNT_USERNAME_REQUIRED = False        # username 필드 사용 x
+# ACCOUNT_USER_MODEL_USERNAME_FIELD = None # username 필드 사용 x
+# ACCOUNT_EMAIL_REQUIRED = True            # email 필드 사용 o
+# ACCOUNT_USERNAME_REQUIRED = False        # username 필드 사용 x
+# ACCOUNT_AUTHENTICATION_METHOD = 'email'
+
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USERNAME_REQUIRED = False
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # JWT 환경 설정
 REST_USE_JWT = True
