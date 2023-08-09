@@ -59,7 +59,7 @@ def kakao_callback(request):
     print(kakao_account) 참고
     """
     # print(kakao_account)
-    email = kakao_account.get('email')
+    email = kakao_account.get('account_email')
     """
     Signup or Signin Request
     """
