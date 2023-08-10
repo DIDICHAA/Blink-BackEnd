@@ -11,6 +11,8 @@ from allauth.socialaccount.providers.google import views as google_view
 from allauth.socialaccount.providers.kakao import views as kakao_view
 from allauth.socialaccount.providers.github import views as github_view
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from allauth.socialaccount.providers.oauth2.views import OAuth2Adapter
+from allauth.socialaccount.providers.oauth2.views import OAuth2View
 from allauth.socialaccount.models import SocialAccount
 from .models import User
 
@@ -19,6 +21,7 @@ BASE_URL = 'http://localhost:8000/'
 GOOGLE_CALLBACK_URI = BASE_URL + 'accounts/google/callback/'
 KAKAO_CALLBACK_URI = BASE_URL + 'accounts/kakao/callback/'
 GITHUB_CALLBACK_URI = BASE_URL + 'accounts/github/callback/'
+NAVER_CALLBACK_URI = BASE_URL + 'accounts/naver/callback/'
 
 state = getattr(settings, 'STATE')
 
@@ -175,3 +178,15 @@ class GoogleLogin(SocialLoginView):
     client_class = OAuth2Client
 
 
+class NaverOAuth2Adapter(OAuth2Adapter):
+    provider_id = 'naver'
+    access_token_url = 'https://nid.naver.com/oauth2.0/token'
+    authorize_url = 'https://nid.naver.com/oauth2.0/authorize'
+    profile_url = 'https://openapi.naver.com/v1/nid/me'
+
+
+class NaverLogin(SocialLoginView):
+    adapter_class = NaverOAuth2Adapter
+    callback_url = NAVER_CALLBACK_URI
+    client_class = OAuth2Client
+    #serializer_class = SocialLoginSerializer  # 위에서 정의한 클래스로 수정해주세요
