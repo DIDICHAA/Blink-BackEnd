@@ -10,11 +10,16 @@ from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.google import views as google_view
 from allauth.socialaccount.providers.kakao import views as kakao_view
 from allauth.socialaccount.providers.github import views as github_view
+from allauth.socialaccount.providers.naver import views as naver_views
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.oauth2.views import OAuth2Adapter
 from allauth.socialaccount.providers.oauth2.views import OAuth2View
 from allauth.socialaccount.models import SocialAccount
 from .models import User
+
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
 
 BASE_URL = 'http://localhost:8000/'
@@ -185,8 +190,79 @@ class NaverOAuth2Adapter(OAuth2Adapter):
     profile_url = 'https://openapi.naver.com/v1/nid/me'
 
 
-class NaverLogin(SocialLoginView):
-    adapter_class = NaverOAuth2Adapter
-    callback_url = NAVER_CALLBACK_URI
-    client_class = OAuth2Client
-    #serializer_class = SocialLoginSerializer  # 위에서 정의한 클래스로 수정해주세요
+class NaverLogin(APIView):
+    permission_classes = (AllowAny,)
+    
+    def get(self, request, *args, **kwargs):
+        client_id = settings.NAVER_CLIENT_ID
+        response_type = "code"
+        uri = main_domain + "/user/naver/callback"
+        state = settings.STATE
+        url = "https://nid.naver.com/oauth2.0/authorize"
+        
+        return redirect(
+            f'{url}?response_type={response_type}&client_id={client_id}&redirect_uri={uri}&state={state}'
+        )
+
+class NaverCallback(APIView):
+    permission_classes = (AllowAny,)
+    
+    def get(self, request, *args, **kwargs):
+        try:
+            grant_type = 'authorization_code'
+            client_id = settings.NAVER_CLIENT_ID
+            client_secret = settings.NAVER_CLIENT_SECRET
+            code = request.GET.get('code')
+            state = request.GET.get('state')
+
+            parameters = f"grant_type={grant_type}&client_id={client_id}&client_secret={client_secret}&code={code}&state={state}"
+
+            token_request = requests.get(
+                f"https://nid.naver.com/oauth2.0/token?{parameters}"
+            )
+
+            token_response_json = token_request.json()
+            error = token_response_json.get("error", None)
+
+            if error is not None:
+                raise JSONDecodeError(error)
+
+            access_token = token_response_json.get("access_token")
+
+            user_info_request = requests.get(
+                "https://openapi.naver.com/v1/nid/me",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+
+            if user_info_request.status_code != 200:
+                return JsonResponse({"error": "이메일을 가져오는 데 실패하였습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+            user_info = user_info_request.json().get("response")
+            email = user_info["email"]
+
+            if email is None:
+                return JsonResponse({
+                    "error": "네이버로부터 이메일 정보를 가져올 수 없습니다."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                user = User.objects.get(email=email)
+                data = {'access_token': access_token, 'code': code}
+                accept = requests.post(
+                    f"{main_domain}/user/naver/login/success", data=data
+                )
+                if accept.status_code != 200:
+                    return JsonResponse({"error": "로그인에 실패하였습니다."}, status=accept.status_code)
+                return Response(accept.json(), status=status.HTTP_200_OK)
+
+            except User.DoesNotExist:
+                data = {'access_token': access_token, 'code': code}
+                accept = requests.post(
+                    f"{main_domain}/user/naver/login/success", data=data
+                )
+                return Response(accept.json(), status=status.HTTP_200_OK)
+                
+        except:
+            return JsonResponse({
+                "error": "오류가 발생하였습니다.",
+            }, status=status.HTTP_404_NOT_FOUND)
