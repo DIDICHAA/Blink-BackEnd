@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.kakao',
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.naver',
 ]
 
 SITE_ID = 1
@@ -84,6 +85,17 @@ REST_FRAMEWORK = {
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
 }
+
+SOCIALACCOUNT_PROVIDERS = {
+    'naver': {
+        'APP': {
+            'client_id': 'mENQdls9yGE3a5JQdPMa',
+            'secret': 'wX_6nHccpn',
+            'key': ''
+        }
+    }
+}
+
 
 # ACCOUNT_USER_MODEL_USERNAME_FIELD = None # username 필드 사용 x
 # ACCOUNT_EMAIL_REQUIRED = True            # email 필드 사용 o
