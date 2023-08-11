@@ -33,8 +33,8 @@ class MainPostViewSet(
             return MainPostListSerializer
         return MainPostSerializer
     
-    def get_permission(self):
-        if self.action in ['create', 'destroy']:
+    def get_permissions(self):
+        if self.action in ['create', 'destroy', 'update', 'partial_update']:
             return [IsAuthenticated()]
         return []
     
