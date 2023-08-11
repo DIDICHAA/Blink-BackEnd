@@ -6,16 +6,25 @@ from django.conf.urls.static import static
 
 app_name = "community"
 
-default_router = routers.SimpleRouter()
-default_router.register("composts", CommunityViewSet, basename="composts")
+default_router = routers.SimpleRouter(trailing_slash=False)
+default_router.register("composts", ComPostViewSet, basename="composts")
 
-comment_router = routers.SimpleRouter()
-comment_router.register("comcomments", CommentViewSet, basename="comcomments")
+comcomment_router = routers.SimpleRouter(trailing_slash=False)
+comcomment_router.register("comcomments", ComCommentViewSet, basename="comcomments")
 
-community_comment_router = routers.SimpleRouter()
-community_comment_router.register("comcomments", CommunityCommentViewSet, basename="comcomments")
+community_comcomment_router = routers.SimpleRouter(trailing_slash=False)
+community_comcomment_router.register("comcomments", CommunityComCommentViewSet, basename="comcomments")
+
+comreply_router = routers.SimpleRouter(trailing_slash=False)
+comreply_router.register("comerplies", ComReplyViewSet, basename="comerplies")
+
+community_comreply_router = routers.SimpleRouter(trailing_slash=False)
+community_comreply_router.register("comreplies", CommunityComReplyViewSet, basename="comreplies")
 
 urlpatterns = [
     path("", include(default_router.urls)),
-    path("", include(comment_router.urls)),
+    path("", include(comcomment_router.urls)),
+    path("", include(comreply_router.urls)),
+    path("composts/<int:compost_id>/", include(community_comcomment_router.urls)),
+    path("comcomments/<int:comcomment_id>/", include(community_comreply_router.urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
