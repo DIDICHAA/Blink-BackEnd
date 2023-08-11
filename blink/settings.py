@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django_filters',
 
     # app
     'main',
@@ -74,6 +75,10 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.naver',
 ]
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
 SITE_ID = 1
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -84,6 +89,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
+    'DEFAULT_PERMISSON_CLASSES' : [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ]
 }
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -202,5 +210,3 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
