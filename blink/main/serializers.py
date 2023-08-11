@@ -5,14 +5,10 @@ from .models import *
 class MainPostSerializer(serializers.ModelSerializer):
     # detail 화면에서 comments 가져오기
     comments = serializers.SerializerMethodField()
-    replies = serializers.SerializerMethodField()
+    # replies = serializers.SerializerMethodField()
     
     def get_comments(self, instance):
         serializers = MainCommentSerializer(instance.comments, many=True)
-        return serializers.data
-    
-    def get_replies(self, instance):
-        serializers = MainReplySerializer(instance.replies, many=True)
         return serializers.data
     
     class Meta:
@@ -24,6 +20,7 @@ class MainPostSerializer(serializers.ModelSerializer):
             'writer',
             'content',
             'created_at',
+            'comments',
             # location, category, filmed_at, media 차후 수정예정
         ]
         # 읽기전용 필드 목록
@@ -34,7 +31,7 @@ class MainPostSerializer(serializers.ModelSerializer):
 
 class MainPostListSerializer(serializers.ModelSerializer):
     comments_cnt = serializers.IntegerField()
-    like_cnt = serializers.IntegerField()
+    # like_cnt = serializers.IntegerField()
 
     class Meta:
         model = MainPost
@@ -46,20 +43,25 @@ class MainPostListSerializer(serializers.ModelSerializer):
             'content',
             'created_at',
             'comments_cnt',
-            'like_cnt',
+            # 'like_cnt',
         ]
         # 읽기전용 필드 목록
-        read_only_field = [
-            'id', 
-            'title',
-            'writer',
-            'content',
-            'created_at',
-            'commtents_cnt',
-            'like_cnt',
-        ]
+        # read_only_field = [
+        #     'id', 
+        #     'writer',
+        #     'created_at',
+        #     'commtents_cnt',
+        #     'like_cnt',
+        # ]
     
 class MainCommentSerializer(serializers.ModelSerializer):
+    content = serializers.CharField()
+    replies = serializers.SerializerMethodField()
+    
+    def get_replies(self, instance):
+        serializers = MainReplySerializer(instance.replies, many=True)
+        return serializers.data
+    
     class Meta:
         model = MainComment
         # 직렬화에 포함되는 필드 목록 (all이어도 모두쓰기)
@@ -69,6 +71,7 @@ class MainCommentSerializer(serializers.ModelSerializer):
             'content',
             'created_at',
             'mainpost',
+            'replies',
         ]
         read_only_field = [
             'mainpost',
@@ -83,7 +86,7 @@ class MainReplySerializer(serializers.ModelSerializer):
             'writer',
             'content',
             'created_at',
-            'mainpost',
+            'maincomment',
         ]
         read_olny_field = [
             'maincomment',
