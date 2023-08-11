@@ -1,24 +1,24 @@
 from rest_framework import serializers
 from .models import *
 
-class CommunitySerializer(serializers.ModelSerializer):
+class ComPostSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()
-    image = serializers.ImageField(use_url=True, required=False)
+    media = serializers.FileField(use_url=True, required=True)
     like_cnt = serializers.SerializerMethodField()  
 
     def get_like_cnt(self, instance):
         return instance.reactions.filter(reaction='like').count()
 
     def get_comments(self, instance):
-        serializer = CommentSerializer(instance.comments, many=True)
+        serializer = ComCommentSerializer(instance.comcomments, many=True)
         return serializer.data
 
     class Meta:
-        model = Community
+        model = ComPost
         fields = "__all__"
         read_only_fields = ['id', 'created_at', 'updated_at', 'like_cnt', 'comments_cnt']
 
-class CommunityListSerializer(serializers.ModelSerializer):
+class ComPostListSerializer(serializers.ModelSerializer):
     comments_cnt = serializers.SerializerMethodField()
     like_cnt = serializers.SerializerMethodField() 
 
@@ -26,10 +26,10 @@ class CommunityListSerializer(serializers.ModelSerializer):
         return instance.reactions.filter(reaction='like').count()
 
     def get_comments_cnt(self, instance):
-        return instance.comments.count()
+        return instance.comcomments.count()
         
     class Meta:
-        model = Community
+        model = ComPost
         fields = [
             'id',
             'title',
@@ -38,17 +38,33 @@ class CommunityListSerializer(serializers.ModelSerializer):
             'updated_at',
             'comments_cnt',
             'like_cnt',
+            'media'
         ]
         read_only_fields = ['id','created_at', 'updated_at', 'comments_cnt', 'like_cnt']
 
-class CommentSerializer(serializers.ModelSerializer):
+class ComCommentSerializer(serializers.ModelSerializer):
 
-    community = serializers.SerializerMethodField()
+    compost = serializers.SerializerMethodField()
 
-    def get_community(self, instance):
-        return instance.community.title
+    def get_compost(self, instance):
+        return instance.compost.title
 
     class Meta:
-        model = Comment
+        model = ComComment
         fields = '__all__'
-        read_only_fields = ['community', 'id']
+        read_only_fields = ['compost', 'id']
+
+class ComReplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComReply
+        # 직렬화에 포함되는 필드 목록 (all이어도 모두쓰기)
+        fields = [
+            'id',
+            'writer',
+            'content',
+            'created_at',
+            'comcomment',
+        ]
+        read_only_fields = [
+            'comcomment',
+        ]
