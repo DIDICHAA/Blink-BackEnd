@@ -68,7 +68,7 @@ class ComPostViewSet(viewsets.ModelViewSet):
 #게시글 댓글 많은 순
     @action(detail=False, methods=["GET"])
     def cmt(self, request):
-        composts = self.queryset.order_by("-comments_cnt")
+        composts = self.queryset.order_by("-comcomments_cnt")
         serializer = self.get_serializer(composts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
