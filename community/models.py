@@ -15,6 +15,7 @@ class ComPost(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     media = models.FileField(upload_to='compost_media/', blank=True, null=True)
     #writer = models.ForeignKey(User, on_delete=models.CASCADE)
+    comcomments_cnt = models.PositiveIntegerField(default=0)
 
 class ComComment(models.Model):
     id = models.AutoField(primary_key=True)
@@ -25,6 +26,18 @@ class ComComment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     like = models.PositiveIntegerField(default=0)
     writer = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        # 댓글이 생성되거나 삭제될 때 'comcomments_cnt' 필드 갱신
+        self.compost.comcomments_cnt = self.compost.comcomments.count()
+        self.compost.save()
+        super(ComComment, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # 댓글이 삭제될 때 'comcomments_cnt' 필드 갱신
+        self.compost.comcomments_cnt = self.compost.comcomments.count()
+        self.compost.save()
+        super(ComComment, self).delete(*args, **kwargs)
 
 class CommunityReaction(models.Model):
     REACTION_CHOICES = (("like", "Like"), ("heart", "Heart"))

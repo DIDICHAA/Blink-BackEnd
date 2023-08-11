@@ -1,31 +1,33 @@
 from rest_framework import serializers
 from .models import *
+from rest_framework.serializers import ListField
 
 class ComPostSerializer(serializers.ModelSerializer):
-    comments = serializers.SerializerMethodField()
-    media = serializers.FileField(use_url=True, required=True)
+    comcomments = serializers.SerializerMethodField()
+    media = serializers.FileField(use_url=True, required=False)
     like_cnt = serializers.SerializerMethodField()  
 
     def get_like_cnt(self, instance):
         return instance.reactions.filter(reaction='like').count()
 
-    def get_comments(self, instance):
+    def get_comcomments(self, instance):
         serializer = ComCommentSerializer(instance.comcomments, many=True)
         return serializer.data
 
     class Meta:
         model = ComPost
         fields = "__all__"
-        read_only_fields = ['id', 'created_at', 'updated_at', 'like_cnt', 'comments_cnt']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'like_cnt']
 
 class ComPostListSerializer(serializers.ModelSerializer):
-    comments_cnt = serializers.SerializerMethodField()
-    like_cnt = serializers.SerializerMethodField() 
+    comcomments_cnt = serializers.SerializerMethodField()
+    like_cnt = serializers.SerializerMethodField()
+    media = serializers.FileField(use_url=True, required=False)
 
     def get_like_cnt(self, instance):
         return instance.reactions.filter(reaction='like').count()
 
-    def get_comments_cnt(self, instance):
+    def get_comcomments_cnt(self, instance):
         return instance.comcomments.count()
         
     class Meta:
@@ -36,11 +38,11 @@ class ComPostListSerializer(serializers.ModelSerializer):
             'content',
             'created_at',
             'updated_at',
-            'comments_cnt',
+            'comcomments_cnt',
             'like_cnt',
             'media'
         ]
-        read_only_fields = ['id','created_at', 'updated_at', 'comments_cnt', 'like_cnt']
+        read_only_fields = ['id','created_at', 'updated_at', 'comcomments_cnt', 'like_cnt', 'media']
 
 class ComCommentSerializer(serializers.ModelSerializer):
 
