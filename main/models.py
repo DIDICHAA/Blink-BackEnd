@@ -8,10 +8,11 @@ class MainPost(models.Model):
     writer = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.CharField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
+    
     # location = 
     # category =
     # filmed_at =
-    # media = 
+    media = models.FileField(upload_to='mainpost_media/', blank=True, null=True)
 
 class MainComment(models.Model):
     id = models.AutoField(primary_key=True)

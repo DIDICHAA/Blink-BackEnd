@@ -6,6 +6,7 @@ class MainPostSerializer(serializers.ModelSerializer):
     # detail 화면에서 comments 가져오기
     comments = serializers.SerializerMethodField()
     # replies = serializers.SerializerMethodField()
+    media = serializers.FileField(use_url=True, required=True)
     
     def get_comments(self, instance):
         serializers = MainCommentSerializer(instance.comments, many=True)
@@ -21,10 +22,11 @@ class MainPostSerializer(serializers.ModelSerializer):
             'content',
             'created_at',
             'comments',
+            'media',
             # location, category, filmed_at, media 차후 수정예정
         ]
         # 읽기전용 필드 목록
-        read_only_field = [
+        read_only_fields = [
             'id',
             'created_at',
         ]
@@ -46,7 +48,7 @@ class MainPostListSerializer(serializers.ModelSerializer):
             # 'like_cnt',
         ]
         # 읽기전용 필드 목록
-        # read_only_field = [
+        # read_only_fields = [
         #     'id', 
         #     'writer',
         #     'created_at',
@@ -73,7 +75,7 @@ class MainCommentSerializer(serializers.ModelSerializer):
             'mainpost',
             'replies',
         ]
-        read_only_field = [
+        read_only_fields = [
             'mainpost',
         ]
 
@@ -88,7 +90,7 @@ class MainReplySerializer(serializers.ModelSerializer):
             'created_at',
             'maincomment',
         ]
-        read_olny_field = [
+        read_only_fields = [
             'maincomment',
         ]
 
