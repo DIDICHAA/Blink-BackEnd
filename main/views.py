@@ -127,6 +127,7 @@ class MainCommentReplyViewSet(
 # replies detail 관련 뷰셋
 class MainReplyViewSet(
     viewsets.GenericViewSet, 
+    mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin
