@@ -15,9 +15,10 @@ class MainPost(models.Model):
         ('기타', '기타')
     ]
     category = models.CharField(default='', max_length = 10, choices=category_choices, blank=False, null=False)
+    jebo_bool = models.BooleanField(default=False)
 
     # location = 
-    # filmed_at =
+    # filmed_at = 
     # media = models.FileField(upload_to='mainpost_media/', blank=True, null=True)
 
 class MainComment(models.Model):
