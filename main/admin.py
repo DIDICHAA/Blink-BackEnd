@@ -4,3 +4,4 @@ from .models import *
 admin.site.register(MainPost)
 admin.site.register(MainComment)
 admin.site.register(MainReply)
+admin.site.register(MainPostMedia)
