@@ -14,7 +14,7 @@ class MainPostSerializer(serializers.ModelSerializer):
     # detail 화면에서 comments 가져오기
     comments = serializers.SerializerMethodField()
     # replies = serializers.SerializerMethodField()
-    medias = MainPostMediaSerializer(many=True)
+    medias = MainPostMediaSerializer(many=True, required=False)
     
     def get_comments(self, instance):
         serializers = MainCommentSerializer(instance.comments, many=True)
@@ -26,10 +26,19 @@ class MainPostSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         medias_data = self.context['request'].FILES
-        mainpost = MainPost.objects.create(**validated_data)
-        for media_data in medias_data.getlist('madia'):
+        writer_id = self.context['request'].user.id  # 현재 로그인한 사용자의 ID를 가져옴
+        mainpost = MainPost.objects.create(writer_id=writer_id, **validated_data)  # 작성자 ID를 포함하여 MainPost 생성
+        for media_data in medias_data.getlist('media'):
             MainPostMedia.objects.create(mainpost=mainpost, media=media_data)
         return mainpost
+
+    
+    # def create(self, validated_data):
+    #     medias_data = self.context['request'].FILES
+    #     mainpost = MainPost.objects.create(**validated_data)
+    #     for media_data in medias_data.getlist('media'):
+    #         MainPostMedia.objects.create(mainpost=mainpost, media=media_data)
+    #     return mainpost
     class Meta:
         model = MainPost
         # 직렬화에 포함되는 필드 목록 (all이어도 모두쓰기)
@@ -41,13 +50,14 @@ class MainPostSerializer(serializers.ModelSerializer):
             'content',
             'comments',
             'medias',
+            # 'category',
             # location, category, filmed_at 차후 수정예정
         ]
         # 읽기전용 필드 목록
         read_only_fields = [
             'id',
             'created_at',
-            'writer',   
+            'writer',
         ]
 
 # /mainposts 
@@ -66,16 +76,9 @@ class MainPostListSerializer(serializers.ModelSerializer):
             'content',
             'created_at',
             'comments_cnt',
+            # 'category',
             # 'like_cnt',
         ]
-        # 읽기전용 필드 목록
-        # read_only_fields = [
-        #     'id', 
-        #     'writer',
-        #     'created_at',
-        #     'commtents_cnt',
-        #     'like_cnt',
-        # ]
 
 # /mainposts/<int:mainpost_id>/maincomments, 
 # /maincomments, 
@@ -101,7 +104,8 @@ class MainCommentSerializer(serializers.ModelSerializer):
             'replies',
         ]
         read_only_fields = [
-            'mainpost',
+            'id',
+            'created_at',
         ]
 
 # /mainreplies, /mainreplies/<int:mainreply_id> (reply list, delete에 사용하는 serializer)
@@ -117,7 +121,8 @@ class MainReplySerializer(serializers.ModelSerializer):
             'maincomment',
         ]
         read_only_fields = [
-            'maincomment',
+            'id',
+            'created_at'
         ]
 
 

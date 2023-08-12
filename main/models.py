@@ -16,7 +16,7 @@ class MainPost(models.Model):
 
 class MainPostMedia(models.Model):
     mainpost = models.ForeignKey(MainPost, on_delete=models.CASCADE, related_name='medias')
-    media = models.FileField(upload_to='mainpost_media/') #, blank=True, null=True 필요하면 집어넣기
+    media = models.FileField(upload_to='mainpost_media/', blank=True, null=True) #, blank=True, null=True 필요하면 집어넣기
 
 class MainComment(models.Model):
     id = models.AutoField(primary_key=True)
