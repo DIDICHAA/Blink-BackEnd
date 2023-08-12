@@ -9,16 +9,14 @@ class MainPost(models.Model):
     content = models.CharField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
     category_choices = [
-        (1, 'Category 1'), 
-        (2, 'Category 2'), 
-        (3, 'Category 3'), 
-        (4, 'Category 4')
+        ('교통사고', '교통사고'), 
+        ('도난,절도', '도난,절도'), 
+        ('실종신고', '실종신고'), 
+        ('기타', '기타')
     ]
     category = models.CharField(default='', max_length = 10, choices=category_choices, blank=False, null=False)
 
-
     # location = 
-    # category =
     # filmed_at =
     # media = models.FileField(upload_to='mainpost_media/', blank=True, null=True)
 
