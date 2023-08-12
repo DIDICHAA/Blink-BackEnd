@@ -8,7 +8,15 @@ class MainPost(models.Model):
     writer = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.CharField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+    category_choices = [
+        (1, 'Category 1'), 
+        (2, 'Category 2'), 
+        (3, 'Category 3'), 
+        (4, 'Category 4')
+    ]
+    category = models.CharField(default='', max_length = 10, choices=category_choices, blank=False, null=False)
+
+
     # location = 
     # category =
     # filmed_at =

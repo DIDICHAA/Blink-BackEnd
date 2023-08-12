@@ -15,7 +15,7 @@ class MainPostSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()
     # replies = serializers.SerializerMethodField()
     medias = MainPostMediaSerializer(many=True, required=False)
-    
+
     def get_comments(self, instance):
         serializers = MainCommentSerializer(instance.comments, many=True)
         return serializers.data
@@ -45,12 +45,12 @@ class MainPostSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'created_at',
+            'category',
             'writer',
             'title',
             'content',
             'comments',
             'medias',
-            # 'category',
             # location, category, filmed_at 차후 수정예정
         ]
         # 읽기전용 필드 목록
@@ -72,6 +72,7 @@ class MainPostListSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'title',
+            'category',
             'writer',
             'content',
             'created_at',
