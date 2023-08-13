@@ -12,7 +12,7 @@ class CombinedActSerializer(serializers.Serializer):
     def get_act(self, obj):
         combined_acts = []
 
-        combined_acts.extend(obj.maincomments.all())
+        #combined_acts.extend(obj.maincomments.all())
         combined_acts.extend(obj.mainreplies.all())
         combined_acts.extend(obj.comcomments.all())
         combined_acts.extend(obj.comreplies.all())
