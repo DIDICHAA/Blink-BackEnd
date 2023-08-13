@@ -27,4 +27,4 @@ urlpatterns = [
     path("", include(comreply_router.urls)),
     path("composts/<int:compost_id>/", include(community_comcomment_router.urls)),
     path("comcomments/<int:comcomment_id>/", include(community_comreply_router.urls)),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
