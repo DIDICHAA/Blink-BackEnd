@@ -39,7 +39,6 @@ class MyPageViewSet(viewsets.GenericViewSet):
         }
         
         return Response(response_data)
-        
 
 class MyRequestViewSet(
     viewsets.GenericViewSet,

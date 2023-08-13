@@ -25,7 +25,7 @@ class MyComPost(models.Model):
         return f'My Community Posts {self.user} - {", ".join(compost.title for compost in self.composts.all())}'
 
 class MyCom(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mycommentsreplies')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mycoms')
     maincomments = models.ManyToManyField(MainComment, related_name='mycoms', blank=True)
     mainreplies = models.ManyToManyField(MainReply, related_name='mycoms', blank=True)
     comcomments = models.ManyToManyField(ComComment, related_name='mycoms', blank=True)

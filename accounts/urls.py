@@ -12,5 +12,4 @@ urlpatterns = [
     path('rest-auth/naver/', views.NaverLogin.as_view(), name='naver'),
     path('auth/token', TokenObtainPairView.as_view(), name='token_obtain_pair'), # refresh token, access token 확인
     path('auth/token/refresh', TokenRefreshView.as_view(), name='token_refresh'), # refresh token 입력 시 새로운 access token
-
 ]
