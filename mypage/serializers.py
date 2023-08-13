@@ -1,22 +1,22 @@
 from rest_framework import serializers
-from .models import MyAct, MainComment, MainReply, ComComment, ComReply
+from .models import MyMainPost, MyComPost, MyCom
 
-class MyActSerializer(serializers.ModelSerializer):
+class MyMainPostSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MyAct
+        model = MyMainPost
         fields = '__all__'
 
-class CombinedActSerializer(serializers.Serializer):
-    act = serializers.SerializerMethodField()
+class MyComPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MyComPost
+        fields = '__all__'
 
-    def get_act(self, obj):
-        combined_acts = []
+class MyComSerializer(serializers.ModelSerializer):
+    maincomments = MainCommentSerializer(many=True, read_only=True)
+    mainreplies = MainReplySerializer(many=True, read_only=True)
+    comcomments = ComCommentSerializer(many=True, read_only=True)
+    comreplies = ComReplySerializer(many=True, read_only=True)
 
-        #combined_acts.extend(obj.maincomments.all())
-        combined_acts.extend(obj.mainreplies.all())
-        combined_acts.extend(obj.comcomments.all())
-        combined_acts.extend(obj.comreplies.all())
-
-        combined_acts.sort(key=lambda x: x.created_at, reverse=True)
-        
-        return combined_acts
+    class Meta:
+        model = MyCom
+        fields = '__all__'

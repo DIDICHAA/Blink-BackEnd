@@ -1,19 +1,17 @@
-from rest_framework import viewsets, mixins
-from rest_framework.response import Response
+from rest_framework import viewsets
 from rest_framework.decorators import action
-from .models import MyAct
-from .serializers import MyActSerializer, CombinedActSerializer
+from rest_framework.response import Response
+from .models import MyMainPost, MyComPost, MyCom
+from .serializers import MyMainPostSerializer, MyComPostSerializer, MyComSerializer
 
-class MyActViewSet(
-    viewsets.GenericViewSet, 
-    mixins.ListModelMixin, 
-    mixins.RetrieveModelMixin
-    ):
-    queryset = MyAct.objects.all()
-    serializer_class = MyActSerializer
+class MyMainPostViewSet(viewsets.ModelViewSet):
+    queryset = MyMainPost.objects.all()
+    serializer_class = MyMainPostSerializer
 
-    @action(methods=['GET'], detail=True, url_path='combined-acts')
-    def combined_acts(self, request, pk=None):
-        my_act = self.get_object()
-        serializer = CombinedActSerializer(my_act)
-        return Response(serializer.data)
+class MyComPostViewSet(viewsets.ModelViewSet):
+    queryset = MyComPost.objects.all()
+    serializer_class = MyComPostSerializer
+
+class MyComViewSet(viewsets.ModelViewSet):
+    queryset = MyCom.objects.all()
+    serializer_class = MyComSerializer
