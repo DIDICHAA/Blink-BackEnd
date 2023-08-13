@@ -1,271 +1,88 @@
-import requests
-from django.shortcuts import redirect
-from django.conf import settings
-from django.utils.translation import gettext_lazy as _
-from django.http import JsonResponse
-from json.decoder import JSONDecodeError
-from rest_framework import status
+from rest_framework import viewsets, status, mixins, generics
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from dj_rest_auth.registration.views import SocialLoginView
-from allauth.socialaccount.providers.google import views as google_view
-from allauth.socialaccount.providers.kakao import views as kakao_view
-from allauth.socialaccount.providers.github import views as github_view
-from allauth.socialaccount.providers.naver import views as naver_views
-from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from allauth.socialaccount.providers.oauth2.views import OAuth2Adapter
-from allauth.socialaccount.providers.oauth2.views import OAuth2View
-from allauth.socialaccount.models import SocialAccount
+from rest_framework.views import APIView
+
+from django.shortcuts import render
+from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.urls import reverse
+from django.core.mail import EmailMessage
+from dj_rest_auth.views import PasswordChangeView
+
+from .serializers import UserLoginSerializer, UserRegisterSerializer, CustomPasswordChangeSerializer
 from .models import User
 
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 
-# 소셜 로그인 ===============================================
-BASE_URL = 'http://localhost:8000/'
-GOOGLE_CALLBACK_URI = BASE_URL + 'accounts/google/callback/'
-KAKAO_CALLBACK_URI = BASE_URL + 'accounts/kakao/callback/'
-GITHUB_CALLBACK_URI = BASE_URL + 'accounts/github/callback/'
-NAVER_CALLBACK_URI = BASE_URL + 'accounts/naver/callback/'
+class SignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserRegisterSerializer
 
-state = getattr(settings, 'STATE')
+    def create(self, request):
+        password = request.data.get('password')
 
-def kakao_login(request):
-    rest_api_key = getattr(settings, 'KAKAO_REST_API_KEY')
-    return redirect(
-        f"https://kauth.kakao.com/oauth/authorize?client_id={rest_api_key}&redirect_uri={KAKAO_CALLBACK_URI}&response_type=code"
-    )
+        user_data = {
+            'email' : request.data['email'],
+            'nickname' : request.data['nickname'],
+        }
+        user = User.objects.create(**user_data)
+        user.set_password(password)
+        user.save()
 
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
 
-def kakao_callback(request):
-    rest_api_key = getattr(settings, 'KAKAO_REST_API_KEY')
-    code = request.GET.get("code")
-    redirect_uri = KAKAO_CALLBACK_URI
-    """
-    Access Token Request
-    """
-    token_req = requests.get(
-        f"https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id={rest_api_key}&redirect_uri={redirect_uri}&code={code}")
-    token_req_json = token_req.json()
-    error = token_req_json.get("error")
-    if error is not None:
-        raise JSONDecodeError(error)
-    access_token = token_req_json.get("access_token")
-    """
-    Email Request
-    """
-    profile_request = requests.get(
-        "https://kapi.kakao.com/v2/user/me", headers={"Authorization": f"Bearer {access_token}"})
-    profile_json = profile_request.json()
-    error = profile_json.get("error")
-    if error is not None:
-        raise JSONDecodeError(error)
-    kakao_account = profile_json.get('kakao_account')
-    """
-    kakao_account에서 이메일 외에
-    카카오톡 프로필 이미지, 배경 이미지 url 가져올 수 있음
-    print(kakao_account) 참고
-    """
-    # print(kakao_account)
-    email = kakao_account.get('account_email')
-    """
-    Signup or Signin Request
-    """
-    try:
-        user = User.objects.get(email=email)
-        # 기존에 가입된 유저의 Provider가 kakao가 아니면 에러 발생, 맞으면 로그인
-        # 다른 SNS로 가입된 유저
-        social_user = SocialAccount.objects.get(user=user)
-        if social_user is None:
-            return JsonResponse({'err_msg': 'email exists but not social user'}, status=status.HTTP_400_BAD_REQUEST)
-        if social_user.provider != 'kakao':
-            return JsonResponse({'err_msg': 'no matching social type'}, status=status.HTTP_400_BAD_REQUEST)
-        # 기존에 Google로 가입된 유저
-        data = {'access_token': access_token, 'code': code}
-        accept = requests.post(
-            f"{BASE_URL}accounts/kakao/login/finish/", data=data)
-        accept_status = accept.status_code
-        if accept_status != 200:
-            return JsonResponse({'err_msg': 'failed to signin'}, status=accept_status)
-        accept_json = accept.json()
-        accept_json.pop('user', None)
-        return JsonResponse(accept_json)
-    except User.DoesNotExist:
-        # 기존에 가입된 유저가 없으면 새로 가입
-        data = {'access_token': access_token, 'code': code}
-        accept = requests.post(
-            f"{BASE_URL}accounts/kakao/login/finish/", data=data)
-        accept_status = accept.status_code
-        if accept_status != 200:
-            return JsonResponse({'err_msg': 'failed to signup'}, status=accept_status)
-        # user의 pk, email, first name, last name과 Access Token, Refresh token 가져옴
-        accept_json = accept.json()
-        accept_json.pop('user', None)
-        return JsonResponse(accept_json)
+        res = Response(
+            {
+                "message": "회원가입 성공!",
+                "token": {
+                    "access": access_token,
+                    "refresh": str(refresh),
+                }
+            },
 
-
-class KakaoLogin(SocialLoginView):
-    adapter_class = kakao_view.KakaoOAuth2Adapter
-    client_class = OAuth2Client
-    callback_url = KAKAO_CALLBACK_URI
-
-def google_login(request):
-    """
-    Code Request
-    """
-    scope = "https://www.googleapis.com/auth/userinfo.email"
-    client_id = getattr(settings, "SOCIAL_AUTH_GOOGLE_CLIENT_ID")
-    return redirect(f"https://accounts.google.com/o/oauth2/v2/auth?client_id={client_id}&response_type=code&redirect_uri={GOOGLE_CALLBACK_URI}&scope={scope}")
-
-
-def google_callback(request):
-    client_id = getattr(settings, "SOCIAL_AUTH_GOOGLE_CLIENT_ID")
-    client_secret = getattr(settings, "SOCIAL_AUTH_GOOGLE_SECRET")
-    code = request.GET.get('code')
-    """
-    Access Token Request
-    """
-    token_req = requests.post(
-        f"https://oauth2.googleapis.com/token?client_id={client_id}&client_secret={client_secret}&code={code}&grant_type=authorization_code&redirect_uri={GOOGLE_CALLBACK_URI}&state={state}")
-    token_req_json = token_req.json()
-    error = token_req_json.get("error")
-    if error is not None:
-        raise JSONDecodeError(error)
-    access_token = token_req_json.get('access_token')
-    """
-    Email Request
-    """
-    email_req = requests.get(
-        f"https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={access_token}")
-    email_req_status = email_req.status_code
-    if email_req_status != 200:
-        return JsonResponse({'err_msg': 'failed to get email'}, status=status.HTTP_400_BAD_REQUEST)
-    email_req_json = email_req.json()
-    email = email_req_json.get('email')
-    """
-    Signup or Signin Request
-    """
-    try:
-        user = User.objects.get(email=email)
-        # 기존에 가입된 유저의 Provider가 google이 아니면 에러 발생, 맞으면 로그인
-        # 다른 SNS로 가입된 유저
-        social_user = SocialAccount.objects.get(user=user)
-        if social_user is None:
-            return JsonResponse({'err_msg': 'email exists but not social user'}, status=status.HTTP_400_BAD_REQUEST)
-        if social_user.provider != 'google':
-            return JsonResponse({'err_msg': 'no matching social type'}, status=status.HTTP_400_BAD_REQUEST)
-        # 기존에 Google로 가입된 유저
-        data = {'access_token': access_token, 'code': code}
-        accept = requests.post(
-            f"{BASE_URL}accounts/google/login/finish/", data=data)
-        accept_status = accept.status_code
-        if accept_status != 200:
-            return JsonResponse({'err_msg': 'failed to signin'}, status=accept_status)
-        accept_json = accept.json()
-        accept_json.pop('user', None)
-        return JsonResponse(accept_json)
-    except User.DoesNotExist:
-        # 기존에 가입된 유저가 없으면 새로 가입
-        data = {'access_token': access_token, 'code': code}
-        accept = requests.post(
-            f"{BASE_URL}accounts/google/login/finish/", data=data)
-        accept_status = accept.status_code
-        if accept_status != 200:
-            return JsonResponse({'err_msg': 'failed to signup'}, status=accept_status)
-        accept_json = accept.json()
-        accept_json.pop('user', None)
-        return JsonResponse(accept_json)
-
-
-class GoogleLogin(SocialLoginView):
-    adapter_class = google_view.GoogleOAuth2Adapter
-    callback_url = GOOGLE_CALLBACK_URI
-    client_class = OAuth2Client
-
-
-class NaverOAuth2Adapter(OAuth2Adapter):
-    provider_id = 'naver'
-    access_token_url = 'https://nid.naver.com/oauth2.0/token'
-    authorize_url = 'https://nid.naver.com/oauth2.0/authorize'
-    profile_url = 'https://openapi.naver.com/v1/nid/me'
-
-
-class NaverLogin(APIView):
-    permission_classes = (AllowAny,)
-    
-    def get(self, request, *args, **kwargs):
-        client_id = settings.NAVER_CLIENT_ID
-        response_type = "code"
-        uri = main_domain + "/user/naver/callback"
-        state = settings.STATE
-        url = "https://nid.naver.com/oauth2.0/authorize"
-        
-        return redirect(
-            f'{url}?response_type={response_type}&client_id={client_id}&redirect_uri={uri}&state={state}'
-        )
-
-class NaverCallback(APIView):
-    permission_classes = (AllowAny,)
-    
-    def get(self, request, *args, **kwargs):
-        try:
-            grant_type = 'authorization_code'
-            client_id = settings.NAVER_CLIENT_ID
-            client_secret = settings.NAVER_CLIENT_SECRET
-            code = request.GET.get('code')
-            state = request.GET.get('state')
-
-            parameters = f"grant_type={grant_type}&client_id={client_id}&client_secret={client_secret}&code={code}&state={state}"
-
-            token_request = requests.get(
-                f"https://nid.naver.com/oauth2.0/token?{parameters}"
+            status=status.HTTP_200_OK,
             )
+        return res
 
-            token_response_json = token_request.json()
-            error = token_response_json.get("error", None)
+class LoginAPIView(APIView):
+    queryset = User.objects.all()
+    serializer_class = UserLoginSerializer
 
-            if error is not None:
-                raise JSONDecodeError(error)
+    def post(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        password = request.data.get('password')
 
-            access_token = token_response_json.get("access_token")
+        user = User.objects.get(email=email)
+        user = authenticate(request, email=email,password=password)
 
-            user_info_request = requests.get(
-                "https://openapi.naver.com/v1/nid/me",
-                headers={"Authorization": f"Bearer {access_token}"},
-            )
-
-            if user_info_request.status_code != 200:
-                return JsonResponse({"error": "이메일을 가져오는 데 실패하였습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-            user_info = user_info_request.json().get("response")
-            email = user_info["email"]
-
-            if email is None:
-                return JsonResponse({
-                    "error": "네이버로부터 이메일 정보를 가져올 수 없습니다."
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                user = User.objects.get(email=email)
-                data = {'access_token': access_token, 'code': code}
-                accept = requests.post(
-                    f"{main_domain}/user/naver/login/success", data=data
+        print(user)
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            
+            login(request, user)
+            res = Response(
+                {
+                    "user": {
+                        'nickname': user.nickname,
+                        'email': user.email,
+                        'password' : user.password
+                    },
+                    "message": "로그인 성공!",
+                    "token": {
+                        "access": access_token,
+                        "refresh": str(refresh),
+                    },
+                },
+                status=status.HTTP_200_OK,
                 )
-                if accept.status_code != 200:
-                    return JsonResponse({"error": "로그인에 실패하였습니다."}, status=accept.status_code)
-                return Response(accept.json(), status=status.HTTP_200_OK)
+            return res
+        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+class CustomPasswordChangeView(PasswordChangeView):
+    serializer_class = CustomPasswordChangeSerializer
 
-            except User.DoesNotExist:
-                data = {'access_token': access_token, 'code': code}
-                accept = requests.post(
-                    f"{main_domain}/user/naver/login/success", data=data
-                )
-                return Response(accept.json(), status=status.HTTP_200_OK)
-                
-        except:
-            return JsonResponse({
-                "error": "오류가 발생하였습니다.",
-            }, status=status.HTTP_404_NOT_FOUND)
-
-# ====================================================================
-# 일반로그인
