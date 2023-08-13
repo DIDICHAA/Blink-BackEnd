@@ -57,7 +57,7 @@ INSTALLED_APPS = [
 
     #django rest framework
     'rest_framework',
-    'rest_framework_simplejwt.token_blacklist',
+    'rest_framework_simplejwt',
     'rest_framework.authtoken',
 
 
@@ -86,12 +86,13 @@ AUTH_USER_MODEL = 'accounts.User'
 #Django rest framework 설정
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        # 'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
-    'DEFAULT_PERMISSON_CLASSES' : [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ]
+    # 'DEFAULT_PERMISSION_CLASSES' : [
+    #     'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    # ]
 }
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -115,7 +116,9 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_USERNAME_REQUIRED = False
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+ACCOUNT_EMAIL_VERIFICATION = None
+
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # JWT 환경 설정
 REST_USE_JWT = True
