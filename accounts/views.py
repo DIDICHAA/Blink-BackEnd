@@ -21,7 +21,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-
+# 소셜 로그인 ===============================================
 BASE_URL = 'http://localhost:8000/'
 GOOGLE_CALLBACK_URI = BASE_URL + 'accounts/google/callback/'
 KAKAO_CALLBACK_URI = BASE_URL + 'accounts/kakao/callback/'
@@ -266,3 +266,6 @@ class NaverCallback(APIView):
             return JsonResponse({
                 "error": "오류가 발생하였습니다.",
             }, status=status.HTTP_404_NOT_FOUND)
+
+# ====================================================================
+# 일반로그인
