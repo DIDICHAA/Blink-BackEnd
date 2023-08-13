@@ -19,6 +19,7 @@ class MainPostSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     comments = serializers.SerializerMethodField()
     medias = MainPostMediaSerializer(many=True, required=False)
+    jebo_bool = serializers.BooleanField()
 
     def get_comments(self, instance):
         serializers = MainCommentSerializer(instance.comments, many=True)
@@ -47,6 +48,7 @@ class MainPostSerializer(serializers.ModelSerializer):
             'content',
             'comments',
             'medias',
+            'jebo_bool',  # Include the jebo_bool field
             # location, category, filmed_at 차후 수정예정
         ]
         # 읽기전용 필드 목록
@@ -74,7 +76,7 @@ class MainPostListSerializer(serializers.ModelSerializer):
             'content',
             'created_at',
             'comments_cnt',
-            # 'category',
+            'jebo_bool',
             # 'like_cnt',
         ]
 
