@@ -1,9 +1,77 @@
 from rest_framework import serializers
-from .models import MyReport, MyRequest, MyComPost, MyCom
+from .models import MyReport, MyRequest, MyComPost, MyCom, User
 from main.models import MainComment, MainReply, MainPost
 from community.models import ComComment, ComReply, ComPost
-from main.serializers import MainCommentSerializer, MainReplySerializer
-from community.serializers import ComCommentSerializer, ComReplySerializer
+from main.serializers import MainCommentSerializer, MainReplySerializer, MainPostSerializer
+from community.serializers import ComCommentSerializer, ComReplySerializer, ComPostSerializer
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['profile_image', 'nickname']
+
+class ProfilePasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+
+#---------여기부터 활동관리-------------------
+#-----------------------------------------
+class ActivitySerializer(serializers.Serializer):
+    user = serializers.StringRelatedField(source='writer')
+    activity_type = serializers.SerializerMethodField()
+    activity_data = serializers.SerializerMethodField()
+
+    def get_activity_type(self, instance):
+        if isinstance(instance, MyRequest):
+            return 'my_request'
+        elif isinstance(instance, MyReport):
+            return 'my_report'
+        elif isinstance(instance, MyComPost):
+            return 'my_compost'
+        elif isinstance(instance, MyCom):
+            return 'my_comment_reply'
+        else:
+            return 'unknown'
+
+    def get_activity_data(self, instance):
+        if isinstance(instance, MyRequest) or isinstance(instance, MyReport):
+            return None
+        elif isinstance(instance, MyComPost):
+            serializer = ComPostSerializer(instance.composts.all(), many=True)
+        elif isinstance(instance, MyCom):
+            comcomments = instance.comcomments.all()
+            comreplies = instance.comreplies.all()
+            maincomments = instance.maincomments.all()
+            mainreplies = instance.mainreplies.all()
+            comcomments_serializer = ComCommentSerializer(comcomments, many=True)
+            comreplies_serializer = ComReplySerializer(comreplies, many=True)
+            maincomments_serializer = MainCommentSerializer(maincomments, many=True)
+            mainreplies_serializer = MainReplySerializer(mainreplies, many=True)
+            serializer = {
+                'comcomments': comcomments_serializer.data,
+                'comreplies': comreplies_serializer.data,
+                'maincomments': maincomments_serializer.data,
+                'mainreplies': mainreplies_serializer.data
+            }
+        return serializer.data
+
+    def get_related_id(self, instance):
+        if instance.content_type.model == 'mainpost':
+            return instance.mainpost.id
+        elif instance.content_type.model == 'compost':
+            return instance.compost.id
+        elif instance.content_type.model == 'maincomment':
+            return instance.maincomment.id
+        elif instance.content_type.model == 'comcomment':
+            return instance.comcomment.id
+        elif instance.content_type.model == 'mainreply':
+            return instance.mainreply.id
+        elif instance.content_type.model == 'comreply':
+            return instance.comreply.id
+        else:
+            return None
+
 
 class MyRequestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -58,3 +126,5 @@ class MyPageSerializer(serializers.Serializer):
     myreports = MyReportSerializer(many=True, read_only=True)
     mycomposts = MyComPostSerializer(many=True, read_only=True)
     mycoms = MyComSerializer(many=True, read_only=True)
+
+
