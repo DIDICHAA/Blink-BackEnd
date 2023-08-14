@@ -30,14 +30,25 @@ class ComPostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ComPost
-        fields = "__all__"
-        read_only_fields = ['id', 'created_at', 'updated_at', 'like_cnt', 'writer']
+        fields = [
+            'id',
+            'title',
+            'writer',
+            'content',
+            'created_at',
+            'updated_at',
+            'comcomments',
+            'comcomments_cnt',
+            'medias',
+            'like_cnt'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'like_cnt', 'writer', 'comcomments_cnt', 'comcomments']
 
 class ComPostListSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     comcomments_cnt = serializers.SerializerMethodField()
     like_cnt = serializers.SerializerMethodField()
-    media = serializers.FileField(use_url=True, required=False)
+    medias = serializers.FileField(use_url=True, required=False)
 
     def get_like_cnt(self, instance):
         return instance.reactions.filter(reaction='like').count()
@@ -56,13 +67,15 @@ class ComPostListSerializer(serializers.ModelSerializer):
             'comcomments_cnt',
             'like_cnt',
             'medias',
-            'writer'
+            'writer',
+            'media'
         ]
         read_only_fields = ['id','writer', 'created_at', 'updated_at', 'comcomments_cnt', 'like_cnt', 'media']
 
 class ComCommentSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     compost = serializers.SerializerMethodField()
+    medias = serializers.FileField(use_url=True, required=False)
 
     def get_compost(self, instance):
         return instance.compost.title
@@ -74,6 +87,7 @@ class ComCommentSerializer(serializers.ModelSerializer):
 
 class ComReplySerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
+    medias = serializers.FileField(use_url=True, required=False)
     class Meta:
         model = ComReply
         # 직렬화에 포함되는 필드 목록 (all이어도 모두쓰기)

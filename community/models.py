@@ -11,7 +11,7 @@ class ComPost(models.Model):
     content = models.TextField(max_length=3000, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    media = models.FileField(upload_to='compost_media/', blank=True, null=True)
+    #media = models.FileField(upload_to='compost_media/', blank=True, null=True)
     writer = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=True)
     comcomments_cnt = models.PositiveIntegerField(default=0)
 
@@ -53,3 +53,7 @@ class ComReply(models.Model):
 class ComPostMedia(models.Model):
     compost = models.ForeignKey(ComPost, on_delete=models.CASCADE, related_name='medias')
     media = models.FileField(upload_to='compost_media/', blank=True, null=True)
+
+class ComCommentMedia(models.Model):
+    ComComment = models.ForeignKey(ComComment, on_delete=models.CASCADE, related_name = 'medias')
+    media = models.FileField(upload_to='comcomment_media/', blank=True, null=True) #, blank=True, null=True 필요하면 집어넣기
