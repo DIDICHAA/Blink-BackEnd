@@ -25,7 +25,6 @@ class MainPostViewSet(
 
     queryset = MainPost.objects.annotate(
         comments_cnt = Count("comments"),
-        # like_cnt 해야해요
         )
     
     def get_serializer_class(self):
