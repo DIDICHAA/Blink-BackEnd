@@ -41,13 +41,14 @@ class MainPostSerializer(serializers.ModelSerializer):
         # 직렬화에 포함되는 필드 목록 (all이어도 모두쓰기)
         fields = [
             'id',
+            'title',
             'created_at',
             'category',
             'jebo_bool',
             'writer',
             'lat',
             'lng',
-            'title',
+            'location',
             'content',
             'comments',
             'medias',
@@ -74,13 +75,15 @@ class MainPostListSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'category',
+            'jebo_bool',
             'writer',
             'lat',
             'lng',
+            'location',
             'content',
             'created_at',
             'comments_cnt',
-            'jebo_bool',
+
             # 'like_cnt',
         ]
 

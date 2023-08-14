@@ -18,10 +18,8 @@ class MainPost(models.Model):
     jebo_bool = models.BooleanField(default=False)
     lat = models.FloatField(blank=True, null=True)
     lng = models.FloatField(blank=True, null=True)
-
-    # location = 
+    location = models.CharField(max_length=300, blank=True, null=True)
     # filmed_at = 
-    # media = models.FileField(upload_to='mainpost_media/', blank=True, null=True)
 
 class MainComment(models.Model):
     id = models.AutoField(primary_key=True)
