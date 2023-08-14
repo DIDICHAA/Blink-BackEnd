@@ -16,6 +16,8 @@ class MainPost(models.Model):
     ]
     category = models.CharField(default='', max_length = 10, choices=category_choices, blank=False, null=False)
     jebo_bool = models.BooleanField(default=False)
+    lat = models.FloatField(blank=True, null=True)
+    lng = models.FloatField(blank=True, null=True)
 
     # location = 
     # filmed_at = 
