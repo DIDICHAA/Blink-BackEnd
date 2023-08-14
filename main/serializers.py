@@ -43,12 +43,14 @@ class MainPostSerializer(serializers.ModelSerializer):
             'id',
             'created_at',
             'category',
+            'jebo_bool',
             'writer',
+            'lat',
+            'lng',
             'title',
             'content',
             'comments',
             'medias',
-            'jebo_bool',  # Include the jebo_bool field
             # location, category, filmed_at 차후 수정예정
         ]
         # 읽기전용 필드 목록
@@ -73,6 +75,8 @@ class MainPostListSerializer(serializers.ModelSerializer):
             'title',
             'category',
             'writer',
+            'lat',
+            'lng',
             'content',
             'created_at',
             'comments_cnt',
