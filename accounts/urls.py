@@ -13,4 +13,5 @@ urlpatterns = [
     path('auth/', include(default_router.urls)),
     path('auth/login', LoginAPIView.as_view(), name='login'),
     path('auth/password/change', CustomPasswordChangeView.as_view(), name='rest_password_change'),
+    path('dj-rest-auth/', include('dj_rest_auth.urls')),
 ]
