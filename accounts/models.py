@@ -42,6 +42,7 @@ class User(AbstractUser, PermissionsMixin):
     username = None
     nickname = models.CharField(default='', max_length=100, null=False, blank=True)
     email = models.EmailField(unique=True, max_length=255)
+    profile_image = models.ImageField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['nickname']
