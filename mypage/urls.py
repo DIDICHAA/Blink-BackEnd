@@ -1,23 +1,15 @@
 from django.urls import path, include
+from rest_framework import routers
 from rest_framework.routers import DefaultRouter
-#from . import views
-from .views import ProfileUpdateView
 
-app_name = 'mypage'
+from .views import ProfileUpdateViewSet, CustomUserDetailsView, ActivityViewSet, MyRequestViewSet, MyReportViewSet, MyComPostViewSet, MyComViewSet
 
+app_name = "mypage"
 
+default_router = routers.SimpleRouter(trailing_slash=False)
+default_router.register("mypage", ProfileUpdateViewSet, basename="mypage")
 
 urlpatterns = [
-    path('mypage/', ProfileUpdateView.as_view(), name='profile_update'),
+    path("", include(default_router.urls)),
+    path('mypage/profile', CustomUserDetailsView.as_view(), name='profile'),
 ]
-
-
-
-#router = DefaultRouter()
-#router.register(r'activities', views.ActivityViewSet, basename='activity')
-
-
-#urlpatterns = [
-    #path('', include(router.urls)),
-    #path('activities/<int:related_id>/', views.goto_activity, name='goto-activity'),
-#]
