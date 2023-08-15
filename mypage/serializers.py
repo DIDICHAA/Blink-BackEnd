@@ -4,8 +4,10 @@ from main.models import MainComment, MainReply, MainPost
 from community.models import ComComment, ComReply, ComPost
 from main.serializers import MainCommentSerializer, MainReplySerializer, MainPostSerializer
 from community.serializers import ComCommentSerializer, ComReplySerializer, ComPostSerializer
+from accounts.models import User
+from dj_rest_auth.serializers import UserDetailsSerializer
 
-class ProfileUpdateSerializer(serializers.ModelSerializer):
+class ProfileUpdateSerializer(UserDetailsSerializer):
     class Meta:
         model = User
         fields = ['profile_image', 'nickname']
