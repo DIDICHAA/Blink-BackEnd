@@ -16,7 +16,7 @@ community_comcomment_router = routers.SimpleRouter(trailing_slash=False)
 community_comcomment_router.register("comcomments", CommunityComCommentViewSet, basename="comcomments")
 
 comreply_router = routers.SimpleRouter(trailing_slash=False)
-comreply_router.register("comerplies", ComReplyViewSet, basename="comerplies")
+comreply_router.register("comreplies", ComReplyViewSet, basename="comreplies")
 
 community_comreply_router = routers.SimpleRouter(trailing_slash=False)
 community_comreply_router.register("comreplies", CommunityComReplyViewSet, basename="comreplies")
