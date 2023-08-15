@@ -14,35 +14,47 @@ from django.contrib.auth import update_session_auth_hash
 
 from dj_rest_auth.views import UserDetailsView
 
+from django.contrib.auth import update_session_auth_hash
+
+# ... (이전 코드 생략)
+
 class ProfileUpdateViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
-    allowed_methods = ['PUT', 'OPTIONS']
 
     @action(detail=False, methods=['put'])
     def update_profile(self, request):
         user = request.user
         profile_serializer = ProfileUpdateSerializer(user, data=request.data, partial=True)
-        password_serializer = ProfilePasswordChangeSerializer(data=request.data)
 
-        if profile_serializer.is_valid() and password_serializer.is_valid():
-            profile_serializer.save()
-
-            old_password = password_serializer.validated_data['old_password']
-            new_password = password_serializer.validated_data['new_password']
+        if profile_serializer.is_valid():
+            old_password = profile_serializer.validated_data.get('old_password')
+            new_password = profile_serializer.validated_data.get('new_password')
+            new_password_confirm = profile_serializer.validated_data.get('new_password_confirm')
 
             if not user.check_password(old_password):
                 return Response({'error': '기존 비밀번호가 일치하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            user.set_password(new_password)
-            user.save()
-            update_session_auth_hash(request, user)
+            if new_password:
+                if new_password != new_password_confirm:
+                    return Response({'error': '새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({'message': '프로필과 비밀번호가 성공적으로 변경되었습니다.'}, status=status.HTTP_200_OK)
+                user.set_password(new_password)
+                user.save()
 
-        return Response({'error': profile_serializer.errors, 'password_error': password_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                # 세션 인증 해시 업데이트
+                update_session_auth_hash(request, user)
+
+            profile_serializer.save()
+
+            return Response({'message': '프로필 정보가 성공적으로 변경되었습니다.'}, status=status.HTTP_200_OK)
+
+        return Response({'error': profile_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class CustomUserDetailsView(UserDetailsView):
     serializer_class = ProfileUpdateSerializer
+
+# 나머지 내용은 그대로 유지하며, 필요에 따라 수정해주시면 됩니다.
+
 
 #-----------------여기서부터 글/댓글 목록 불러오는 건데 걍 다 날려도 됨 미친것
 def goto_activity(request, related_id):
