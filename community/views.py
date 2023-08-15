@@ -69,29 +69,33 @@ class ComPostViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["GET"])
     def cmt(self, request):
         composts = self.queryset.order_by("-comcomments_cnt")
-        serializer = self.get_serializer(composts, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        page = self.paginate_queryset(composts)  # Apply pagination
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)  # Return paginated response
 
 #게시글 좋아요 많은 순
     @action(detail=False, methods=["GET"])
     def popular(self, request):
         composts = self.queryset.order_by("-like_cnt")
-        serializer = self.get_serializer(composts, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        page = self.paginate_queryset(composts)  # Apply pagination
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)  # Return paginated response
 
 #게시글 최근 순
     @action(detail=False, methods=["GET"])
     def recent(self, request):
         composts = self.queryset.order_by("-created_at")
-        serializer = self.get_serializer(composts, many=True)
-        return Response(serializer.data)
+        page = self.paginate_queryset(composts)  # Apply pagination
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)  # Return paginated response
 
 #게시글 오래된 순
     @action(detail=False, methods=["GET"])
     def oldest(self, request):
         composts = self.queryset.order_by("created_at")
-        serializer = self.get_serializer(composts, many=True)
-        return Response(serializer.data)
+        page = self.paginate_queryset(composts)  # Apply pagination
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)  # Return paginated response
 
 #댓글 detail 뷰셋
 class ComCommentViewSet(
