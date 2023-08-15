@@ -70,11 +70,6 @@ INSTALLED_APPS = [
     # django-allauth
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.kakao',
-    'allauth.socialaccount.providers.github',
-    'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.naver',
 ]
 
 MEDIA_URL = '/media/'

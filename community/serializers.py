@@ -68,17 +68,21 @@ class ComPostListSerializer(serializers.ModelSerializer):
             'like_cnt',
             'medias',
             'writer',
-            'media'
         ]
-        read_only_fields = ['id','writer', 'created_at', 'updated_at', 'comcomments_cnt', 'like_cnt', 'media']
+        read_only_fields = ['id', 'writer', 'created_at', 'updated_at', 'comcomments_cnt', 'like_cnt']
 
 class ComCommentSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     compost = serializers.SerializerMethodField()
     medias = serializers.FileField(use_url=True, required=False)
+    replies = serializers.SerializerMethodField()
 
     def get_compost(self, instance):
         return instance.compost.title
+    
+    def get_replies(self, instance):
+        serializers = ComReplySerializer(instance.replies, many=True)
+        return serializers.data
 
     class Meta:
         model = ComComment
@@ -87,7 +91,6 @@ class ComCommentSerializer(serializers.ModelSerializer):
 
 class ComReplySerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
-    medias = serializers.FileField(use_url=True, required=False)
     class Meta:
         model = ComReply
         # 직렬화에 포함되는 필드 목록 (all이어도 모두쓰기)
@@ -97,7 +100,6 @@ class ComReplySerializer(serializers.ModelSerializer):
             'content',
             'created_at',
             'comcomment',
-            'medias',
         ]
         read_only_fields = [
             'comcomment',
