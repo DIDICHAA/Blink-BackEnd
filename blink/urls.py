@@ -21,12 +21,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-
-    # path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
-    # path('allauth/', include('allauth.urls')),
-    path('accounts/', include('accounts.urls')),
-    path('', include('main.urls')),
-    path('', include('community.urls')),
-    path('', include('mypage.urls')),
+    path('api/admin/', admin.site.urls),
+    path('api/', include('accounts.urls')),
+    path('api/', include('main.urls')),
+    path('api/', include('community.urls')),
+    path('api/', include('mypage.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
