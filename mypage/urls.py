@@ -1,8 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 from rest_framework.routers import DefaultRouter
-
-from .views import ProfileUpdateViewSet, CustomUserDetailsView, ActivityViewSet, MyRequestViewSet, MyReportViewSet, MyComPostViewSet, MyComViewSet
+from .views import *
 
 app_name = "mypage"
 
@@ -12,4 +11,6 @@ default_router.register("mypage", ProfileUpdateViewSet, basename="mypage")
 urlpatterns = [
     path("", include(default_router.urls)),
     path('mypage/profile', CustomUserDetailsView.as_view(), name='profile'),
+    path('mypage/user-posts', UserPostsAPI.as_view(), name='user-posts-api'), 
 ]
+
