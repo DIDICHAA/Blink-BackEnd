@@ -1,13 +1,13 @@
 from django.shortcuts import render
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
+from django.db.models import Count, Q
+
 from rest_framework import viewsets, mixins
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.decorators import action
-
-
-from django.shortcuts import get_object_or_404
-from django.db.models import Count, Q
-
+from rest_framework import status
 
 from .models import *
 from .serializers import *
@@ -47,6 +47,21 @@ class MainPostViewSet(
     def oldest(self, request):
         queryset = self.get_queryset().order_by("created_at")
         serializer = MainPostListSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(methods=['GET'], detail=False)
+    def notification(self, request):
+        user = request.user
+
+        if user.is_anonymous:
+            return Response({"message": "You must be logged in to access this feature."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        last_second_login = user.last_second_login
+        
+        # 로그인한 사용자가 작성한 MainPost 중 updated_at이 last_second_login보다 늦은 게시물들을 가져옴
+        queryset = self.get_queryset().filter(writer=user, updated_at__gt=last_second_login).order_by('updated_at')
+        
+        serializer = MainPostNotificationSerializer(queryset, many=True)
         return Response(serializer.data)
 
 #======================================================================================
@@ -92,6 +107,10 @@ class MainPostCommentViewSet(
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(mainpost=mainpost)
+
+        # 업데이트된 updated_at 필드 처리
+        mainpost.updated_at = timezone.now()
+        mainpost.save()
         return Response(serializer.data)
     
 #======================================================================================
