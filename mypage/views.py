@@ -88,4 +88,26 @@ class UserPostsAPI(generics.ListAPIView):
         serializer = CombinedSerializer(queryset, context={'request': request})  # 수정된 부분
         return Response(serializer.data)
 
+class MainPostDetailView(generics.RetrieveAPIView):
+    queryset = MainPost.objects.all()
+    serializer_class = MainPostDetailSerializer
 
+class ComPostDetailView(generics.RetrieveAPIView):
+    queryset = ComPost.objects.all()
+    serializer_class = ComPostDetailSerializer
+
+class MainCommentDetailView(generics.RetrieveAPIView):
+    queryset = MainComment.objects.all()
+    serializer_class = MainCommentDetailSerializer
+
+class MainReplyDetailView(generics.RetrieveAPIView):
+    queryset = MainReply.objects.all()
+    serializer_class = MainReplyDetailSerializer
+
+class ComCommentDetailView(generics.RetrieveAPIView):
+    queryset = ComComment.objects.all()
+    serializer_class = ComCommentDetailSerializer
+
+class ComReplyDetailView(generics.RetrieveAPIView):
+    queryset = ComReply.objects.all()
+    serializer_class = ComReplyDetailSerializer

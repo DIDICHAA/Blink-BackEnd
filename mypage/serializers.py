@@ -95,3 +95,33 @@ class CombinedSerializer(serializers.Serializer):
 
         return serialized_data
 
+class MainPostDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MainPost
+        fields = '__all__'
+
+class ComPostDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComPost
+        fields = '__all__'
+
+class MainCommentDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MainComment
+        fields = '__all__'
+
+class MainReplyDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MainReply
+        fields = '__all__'
+
+class ComCommentDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComComment
+        fields = '__all__'
+
+class ComReplyDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComReply
+        fields = '__all__'
+
