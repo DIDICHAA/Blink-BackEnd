@@ -11,6 +11,6 @@ default_router.register("mypage", ProfileUpdateViewSet, basename="mypage")
 urlpatterns = [
     path("", include(default_router.urls)),
     path('mypage/profile', CustomUserDetailsView.as_view(), name='profile'),
-    path('mypage/user-posts', UserPostsAPI.as_view(), name='user-posts-api'), 
+    path('mypage/activities', UserPostsAPI.as_view(), name='activities'), 
 ]
 

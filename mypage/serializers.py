@@ -37,6 +37,31 @@ class ProfileUpdateSerializer(UserDetailsSerializer):
 
 #---------여기부터 활동관리-------------------
 #-----------------------------------------
+
+class CommentContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('content',)
+
+class MainCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MainComment
+        fields = ('content', 'created_at')
+
+class MainReplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MainReply
+        fields = ('content', 'created_at')
+
+class ComCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComComment
+        fields = ('content', 'created_at')
+
+class ComReplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComReply
+        fields = ('content', 'created_at')
+
 class MainPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = MainPost
@@ -55,7 +80,18 @@ class CombinedSerializer(serializers.Serializer):
 
     def get_all_comments_and_replies(self, obj):
         combined = obj['all_comments_and_replies']
-        return MainCommentSerializer(combined, many=True).data
+        
+        serialized_data = []
 
+        for item in combined:
+            if isinstance(item, MainComment):
+                serialized_data.append(MainCommentSerializer(item).data)
+            elif isinstance(item, MainReply):
+                serialized_data.append(MainReplySerializer(item).data)
+            elif isinstance(item, ComComment):
+                serialized_data.append(ComCommentSerializer(item).data)
+            elif isinstance(item, ComReply):
+                serialized_data.append(ComReplySerializer(item).data)
 
+        return serialized_data
 

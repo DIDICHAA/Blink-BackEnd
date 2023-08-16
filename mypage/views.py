@@ -59,6 +59,7 @@ class CustomUserDetailsView(UserDetailsView):
 #-----------------여기서부터 글/댓글 목록 불러오는 건데 걍 다 날려도 됨 미친것
 
 class UserPostsAPI(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -84,6 +85,7 @@ class UserPostsAPI(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = CombinedSerializer(queryset, context={'request':'request'})
+        serializer = CombinedSerializer(queryset, context={'request': request})  # 수정된 부분
         return Response(serializer.data)
+
 
