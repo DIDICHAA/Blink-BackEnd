@@ -43,6 +43,7 @@ class MainPostSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'created_at',
+            'updated_at',
             'category',
             'jebo_bool',
             'writer',
@@ -58,6 +59,7 @@ class MainPostSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
             'created_at',
+            'updated_at',
             'writer',
         ]
 
@@ -82,9 +84,21 @@ class MainPostListSerializer(serializers.ModelSerializer):
             'location',
             'content',
             'created_at',
+            'updated_at',
             'comments_cnt',
+        ]
 
-            # 'like_cnt',
+# /mainposts/notification (notification에 사용하는 serializer)
+class MainPostNotificationSerializer(serializers.ModelSerializer):
+    comments_cnt = serializers.IntegerField()
+    class Meta:
+        model = MainPost
+        # 직렬화에 포함되는 필드 목록 (all이어도 모두쓰기)
+        fields = [
+            'id',
+            'title',
+            'category',
+            'comments_cnt',
         ]
 
 # /mainposts/<int:mainpost_id>/maincomments, 

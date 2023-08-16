@@ -63,7 +63,8 @@ class LoginAPIView(APIView):
         if user is not None:
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
-            
+            # 로그인 성공 시, update_second_last_login 함수 호출
+            user.update_second_last_login()
             login(request, user)
             res = Response(
                 {

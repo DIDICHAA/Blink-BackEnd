@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin
+from django.utils import timezone
 
 
 class UserManager(BaseUserManager):
@@ -44,8 +45,17 @@ class User(AbstractUser, PermissionsMixin):
     email = models.EmailField(unique=True, max_length=255)
     profile_image = models.ImageField(upload_to='profile_image/', null=True, blank=True)
 
+    last_second_login = models.DateTimeField(null=True, blank=True)
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['nickname']
+
+    def update_second_last_login(self):
+        # 현재 last_login 값을 last_second_login으로 복사
+        self.last_second_login = self.last_login
+        # 현재 last_login 값을 현재 시간으로 업데이트
+        self.last_login = timezone.now()
+        self.save()
 
     objects = UserManager()
 
