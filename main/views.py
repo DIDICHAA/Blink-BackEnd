@@ -8,9 +8,20 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework import status
+from django_filters import rest_framework as filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import *
 from .serializers import *
+
+class MainPostFilter(filters.FilterSet):
+    category = filters.ChoiceFilter(choices=MainPost.category_choices)
+    title_contains = filters.CharFilter(field_name='title', lookup_expr='icontains')
+    address_contains = filters.CharFilter(field_name='location', lookup_expr='icontains')
+    
+    class Meta:
+        model = MainPost
+        fields = ['category', 'title_contains', 'address_contains']
 
 # Create your views here.
 #======================================================================================
@@ -22,10 +33,15 @@ class MainPostViewSet(
     mixins.DestroyModelMixin,
     mixins.RetrieveModelMixin
     ):
+    # Define the filter backend class and the filter class
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = MainPostFilter
 
-    queryset = MainPost.objects.annotate(
-        comments_cnt = Count("comments"),
+    def get_queryset(self):
+        queryset = MainPost.objects.annotate(
+            comments_cnt=Count("comments"),
         )
+        return queryset
     
     def get_serializer_class(self):
         if self.action == "list":
@@ -59,7 +75,7 @@ class MainPostViewSet(
         last_second_login = user.last_second_login
         
         # 로그인한 사용자가 작성한 MainPost 중 updated_at이 last_second_login보다 늦은 게시물들을 가져옴
-        queryset = self.get_queryset().filter(writer=user, updated_at__gt=last_second_login).order_by('updated_at')
+        queryset = self.get_queryset().filter(writer=user, updated_at__gt=last_second_login, comments_cnt__gt=0).order_by('updated_at')
         
         serializer = MainPostNotificationSerializer(queryset, many=True)
         return Response(serializer.data)
