@@ -56,8 +56,7 @@ INSTALLED_APPS = [
     'community',
     'accounts',
     'mypage',
-    'notice',
-
+    
     #django rest framework
     'rest_framework',
     'rest_framework_simplejwt',
