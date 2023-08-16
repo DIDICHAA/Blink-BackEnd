@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     'community',
     'accounts',
     'mypage',
-    
+
     #django rest framework
     'rest_framework',
     'rest_framework_simplejwt',
@@ -140,8 +140,11 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",  # 클라이언트의 주소
-    "http://localhost:5174"
+    "http://localhost:5173"
 ]
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 ROOT_URLCONF = 'blink.urls'
 
