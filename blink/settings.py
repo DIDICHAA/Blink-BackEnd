@@ -83,24 +83,10 @@ AUTH_USER_MODEL = 'accounts.User'
 #Django rest framework 설정
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-        # 'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    # 'DEFAULT_PERMISSION_CLASSES' : [
-    #     'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    # ]
 }
 
-SOCIALACCOUNT_PROVIDERS = {
-    'naver': {
-        'APP': {
-            'client_id': 'mENQdls9yGE3a5JQdPMa',
-            'secret': 'wX_6nHccpn',
-            'key': ''
-        }
-    }
-}
 
 
 # ACCOUNT_USER_MODEL_USERNAME_FIELD = None # username 필드 사용 x
@@ -131,7 +117,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
