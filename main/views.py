@@ -17,11 +17,11 @@ from .serializers import *
 class MainPostFilter(filters.FilterSet):
     category = filters.ChoiceFilter(choices=MainPost.category_choices)
     title_contains = filters.CharFilter(field_name='title', lookup_expr='icontains')
-    address_contains = filters.CharFilter(field_name='location', lookup_expr='icontains')
+    location_contains = filters.CharFilter(field_name='location', lookup_expr='icontains')
     
     class Meta:
         model = MainPost
-        fields = ['category', 'title_contains', 'address_contains']
+        fields = ['category', 'title_contains', 'location_contains']
 
 # Create your views here.
 #======================================================================================
