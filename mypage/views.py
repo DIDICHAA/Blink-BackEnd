@@ -1,4 +1,4 @@
-from rest_framework import viewsets, mixins, status
+from rest_framework import viewsets, mixins, status, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 
@@ -6,7 +6,7 @@ from community.models import ComPost, ComComment, ComReply
 from main.models import MainPost, MainComment, MainReply
 from .serializers import *
 from django.shortcuts import redirect, get_object_or_404
-from .models import Activity
+from .models import *
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -16,7 +16,7 @@ from dj_rest_auth.views import UserDetailsView
 
 from django.contrib.auth import update_session_auth_hash
 
-# ... (이전 코드 생략)
+
 
 class ProfileUpdateViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
@@ -57,143 +57,57 @@ class CustomUserDetailsView(UserDetailsView):
 
 
 #-----------------여기서부터 글/댓글 목록 불러오는 건데 걍 다 날려도 됨 미친것
-def goto_activity(request, related_id):
-    activity = get_object_or_404(Activity, id=related_id)
-    # 해당 활동에 대한 URL 생성 또는 리다이렉트
-    if activity.content_type.model == 'mainpost':
-        return redirect('main:mainpost-detail', pk=activity.mainpost.id)
-    elif activity.content_type.model == 'compost':
-        return redirect('community:compost-detail', pk=activity.compost.id)
-    elif activity.content_type.model == 'maincomment':
-        return redirect('main:maincomment-detail', pk=activity.maincomment.id)
-    elif activity.content_type.model == 'comcomment':
-        return redirect('community:comcomment-detail', pk=activity.comcomment.id)
-    elif activity.content_type.model == 'mainreply':
-        return redirect('main:mainreply-detail', pk=activity.mainreply.id)
-    elif activity.content_type.model == 'comreply':
-        return redirect('community:comreply-detail', pk=activity.comreply.id)
-    else:
-        return redirect('mypage:activity-list')
 
-
-class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = ActivitySerializer
+class UserPostsAPI(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
 
-        user_composts = ComPost.objects.filter(writer=user)
-        user_comcomments = ComComment.objects.filter(writer=user)
-        user_comreplies = ComReply.objects.filter(writer=user)
-        user_mainposts = MainPost.objects.filter(writer=user)
-        user_maincomments = MainComment.objects.filter(writer=user)
-        user_mainreplies = MainReply.objects.filter(writer=user)
+        jebo_true_posts = MainPost.objects.filter(writer=user, jebo_bool=1)
+        jebo_false_posts = MainPost.objects.filter(writer=user, jebo_bool=0)
+        community_posts = ComPost.objects.filter(writer=user)
+        
+        main_comments = list(MainComment.objects.filter(writer=user))
+        main_replies = list(MainReply.objects.filter(writer=user))
+        com_comments = list(ComComment.objects.filter(writer=user))
+        com_replies = list(ComReply.objects.filter(writer=user))
 
-    # 개별 모델의 쿼리셋을 리스트로 합침
-        queryset = list(user_composts) + list(user_comcomments) + list(user_comreplies) + \
-        list(user_mainposts) + list(user_maincomments) + list(user_mainreplies)
-    
-    # 글 쓴 날짜를 기준으로 정렬
-        queryset = sorted(queryset, key=lambda x: x.created_at, reverse=True)
+        all_comments_and_replies = main_comments + main_replies + com_comments + com_replies
 
-    # 새로운 list로 변환하지 않고 그대로 반환
-        return queryset
+        return {
+            "jebo_true_posts": jebo_true_posts,
+            "jebo_false_posts": jebo_false_posts,
+            "community_posts": community_posts,
+            "all_comments_and_replies": all_comments_and_replies
+        }
 
 
-class MyRequestViewSet(
-    viewsets.GenericViewSet,
-    mixins.ListModelMixin
-):
-    serializer_class = MyRequestSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return MyRequest.objects.filter(user=user)
-
-    # list 메서드 수정
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-
-        # jebo_bool 값이 1인 MainPost들 가져오기
-        mainposts = MainPost.objects.filter(jebo_bool=self.mainpost_jebo_bool)
-        queryset.update(mainposts=mainposts)
-
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = CombinedSerializer(queryset, context={'request': request})  # 수정된 부분
         return Response(serializer.data)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.mainpost_jebo_bool = 1  # 또는 0, 필요한 값으로 초기화
+class MainPostDetailView(generics.RetrieveAPIView):
+    queryset = MainPost.objects.all()
+    serializer_class = MainPostDetailSerializer
 
-class MyReportViewSet(
-    viewsets.GenericViewSet,
-    mixins.ListModelMixin
-):
-    serializer_class = MyReportSerializer
-    permission_classes = [IsAuthenticated]
+class ComPostDetailView(generics.RetrieveAPIView):
+    queryset = ComPost.objects.all()
+    serializer_class = ComPostDetailSerializer
 
-    def get_queryset(self):
-        user = self.request.user
-        return MyReport.objects.filter(user=user)
+class MainCommentDetailView(generics.RetrieveAPIView):
+    queryset = MainComment.objects.all()
+    serializer_class = MainCommentDetailSerializer
 
-    # list 메서드 수정
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
+class MainReplyDetailView(generics.RetrieveAPIView):
+    queryset = MainReply.objects.all()
+    serializer_class = MainReplyDetailSerializer
 
-        # jebo_bool 값이 0인 MainPost들 가져오기
-        mainposts = MainPost.objects.filter(jebo_bool=self.mainpost_jebo_bool)
-        queryset.update(mainposts=mainposts)
+class ComCommentDetailView(generics.RetrieveAPIView):
+    queryset = ComComment.objects.all()
+    serializer_class = ComCommentDetailSerializer
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.mainpost_jebo_bool = 0
-
-class MyComPostViewSet(
-    viewsets.GenericViewSet,
-    mixins.ListModelMixin
-):
-    serializer_class = MyComPostSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return MyComPost.objects.filter(user=user)
-
-    # list 메서드 수정
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-
-        # MyComPost에 연결된 ComPost들 가져오기
-        composts = ComPost.objects.filter(mycompost__user=request.user)
-        queryset.update(composts=composts)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-class MyComViewSet(viewsets.ModelViewSet):
-    queryset = MyCom.objects.all()
-    serializer_class = MyComSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return MyCom.objects.filter(user=user)
-
-    # list 메서드 수정
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-
-        # MyComPost에 연결된 ComPost들 가져오기
-        composts = ComPost.objects.filter(mycompost__user=request.user)
-        queryset.update(composts=composts)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-
+class ComReplyDetailView(generics.RetrieveAPIView):
+    queryset = ComReply.objects.all()
+    serializer_class = ComReplyDetailSerializer

@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from .models import MyReport, MyRequest, MyComPost, MyCom, User
 from main.models import MainComment, MainReply, MainPost
 from community.models import ComComment, ComReply, ComPost
 from main.serializers import MainCommentSerializer, MainReplySerializer, MainPostSerializer
@@ -7,7 +6,6 @@ from community.serializers import ComCommentSerializer, ComReplySerializer, ComP
 from accounts.models import User
 from dj_rest_auth.serializers import UserDetailsSerializer
 
-from dj_rest_auth.serializers import UserDetailsSerializer
 
 class ProfileUpdateSerializer(UserDetailsSerializer):
     old_password = serializers.CharField(write_only=True, required=True)
@@ -27,7 +25,7 @@ class ProfileUpdateSerializer(UserDetailsSerializer):
                 raise serializers.ValidationError("새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다.")
             
             # 기존 비밀번호 확인 로직 추가
-            old_password = data.get('old_password')  # 이 부분은 제가 생략한 부분입니다.
+            old_password = data.get('old_password') 
             if not self.instance.check_password(old_password):
                 raise serializers.ValidationError("기존 비밀번호가 일치하지 않습니다.")
             
@@ -39,114 +37,91 @@ class ProfileUpdateSerializer(UserDetailsSerializer):
 
 #---------여기부터 활동관리-------------------
 #-----------------------------------------
-class ActivitySerializer(serializers.Serializer):
-    user = serializers.StringRelatedField(source='writer')
-    activity_type = serializers.SerializerMethodField()
-    activity_data = serializers.SerializerMethodField()
 
-    def get_activity_type(self, instance):
-        if isinstance(instance, MyRequest):
-            return 'my_request'
-        elif isinstance(instance, MyReport):
-            return 'my_report'
-        elif isinstance(instance, MyComPost):
-            return 'my_compost'
-        elif isinstance(instance, MyCom):
-            return 'my_comment_reply'
-        else:
-            return 'unknown'
-
-    def get_activity_data(self, instance):
-        if isinstance(instance, MyRequest) or isinstance(instance, MyReport):
-            return None
-        elif isinstance(instance, MyComPost):
-            serializer = ComPostSerializer(instance.composts.all(), many=True)
-        elif isinstance(instance, MyCom):
-            comcomments = instance.comcomments.all()
-            comreplies = instance.comreplies.all()
-            maincomments = instance.maincomments.all()
-            mainreplies = instance.mainreplies.all()
-            comcomments_serializer = ComCommentSerializer(comcomments, many=True)
-            comreplies_serializer = ComReplySerializer(comreplies, many=True)
-            maincomments_serializer = MainCommentSerializer(maincomments, many=True)
-            mainreplies_serializer = MainReplySerializer(mainreplies, many=True)
-            serializer = {
-                'comcomments': comcomments_serializer.data,
-                'comreplies': comreplies_serializer.data,
-                'maincomments': maincomments_serializer.data,
-                'mainreplies': mainreplies_serializer.data
-            }
-        return serializer.data
-
-    def get_related_id(self, instance):
-        if instance.content_type.model == 'mainpost':
-            return instance.mainpost.id
-        elif instance.content_type.model == 'compost':
-            return instance.compost.id
-        elif instance.content_type.model == 'maincomment':
-            return instance.maincomment.id
-        elif instance.content_type.model == 'comcomment':
-            return instance.comcomment.id
-        elif instance.content_type.model == 'mainreply':
-            return instance.mainreply.id
-        elif instance.content_type.model == 'comreply':
-            return instance.comreply.id
-        else:
-            return None
-
-
-class MyRequestSerializer(serializers.ModelSerializer):
+class CommentContentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MyRequest
+        fields = ('content', 'created_at')
+
+class MainCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MainComment
+        fields = ('content', 'created_at')
+
+class MainReplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MainReply
+        fields = ('content', 'created_at')
+
+class ComCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComComment
+        fields = ('content', 'created_at')
+
+class ComReplySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComReply
+        fields = ('content', 'created_at')
+
+class MainPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MainPost
+        fields = ('title', 'updated_at')
+
+class ComPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComPost
+        fields = ('title', 'updated_at')
+
+class CombinedSerializer(serializers.Serializer):
+    jebo_true_posts = MainPostSerializer(many=True)
+    jebo_false_posts = MainPostSerializer(many=True)
+    community_posts = ComPostSerializer(many=True)
+    all_comments_and_replies = serializers.SerializerMethodField()
+
+    def get_all_comments_and_replies(self, obj):
+        combined = obj['all_comments_and_replies']
+        
+        serialized_data = []
+
+        for item in combined:
+            if isinstance(item, MainComment):
+                serialized_data.append(MainCommentSerializer(item).data)
+            elif isinstance(item, MainReply):
+                serialized_data.append(MainReplySerializer(item).data)
+            elif isinstance(item, ComComment):
+                serialized_data.append(ComCommentSerializer(item).data)
+            elif isinstance(item, ComReply):
+                serialized_data.append(ComReplySerializer(item).data)
+
+        return serialized_data
+
+class MainPostDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MainPost
         fields = '__all__'
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['mainposts'] = [str(mainpost) for mainpost in instance.mainposts.all()]
-        return representation
-
-class MyReportSerializer(serializers.ModelSerializer):
+class ComPostDetailSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MyReport
+        model = ComPost
         fields = '__all__'
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['mainposts'] = [str(mainpost) for mainpost in instance.mainposts.all()]
-        return representation
-
-class MyComPostSerializer(serializers.ModelSerializer):
+class MainCommentDetailSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MyComPost
+        model = MainComment
         fields = '__all__'
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['composts'] = [str(compost) for compost in instance.composts.all()]
-        return representation
-
-class MyComSerializer(serializers.ModelSerializer):
-    maincomments = MainCommentSerializer(source='maincomments.all', many=True, read_only=True)
-    mainreplies = MainReplySerializer(source='mainreplies.all', many=True, read_only=True)
-    comcomments = ComCommentSerializer(source='comcomments.all', many=True, read_only=True)
-    comreplies = ComReplySerializer(source='comreplies.all', many=True, read_only=True)
-
+class MainReplyDetailSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MyCom
+        model = MainReply
         fields = '__all__'
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['maincomments'] = [str(maincomment) for maincomment in instance.maincomments.all()]
-        representation['mainreplies'] = [str(mainreply) for mainreply in instance.mainreplies.all()]
-        representation['comcomments'] = [str(comcomment) for comcomment in instance.comcomments.all()]
-        representation['comreplies'] = [str(comreply) for comreply in instance.comreplies.all()]
-        return representation
+class ComCommentDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComComment
+        fields = '__all__'
 
-class MyPageSerializer(serializers.Serializer):
-    myrequests = MyRequestSerializer(many=True, read_only=True)
-    myreports = MyReportSerializer(many=True, read_only=True)
-    mycomposts = MyComPostSerializer(many=True, read_only=True)
-    mycoms = MyComSerializer(many=True, read_only=True)
-
+class ComReplyDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComReply
+        fields = '__all__'
 
