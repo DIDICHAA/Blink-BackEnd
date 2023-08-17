@@ -40,37 +40,37 @@ class ProfileUpdateSerializer(UserDetailsSerializer):
 
 class CommentContentSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('content', 'created_at')
+        fields = ('content', 'created_at', 'id')
 
 class MainCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = MainComment
-        fields = ('content', 'created_at')
+        fields = ('content', 'created_at', 'id')
 
 class MainReplySerializer(serializers.ModelSerializer):
     class Meta:
         model = MainReply
-        fields = ('content', 'created_at')
+        fields = ('content', 'created_at', 'id')
 
 class ComCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ComComment
-        fields = ('content', 'created_at')
+        fields = ('content', 'created_at', 'id')
 
 class ComReplySerializer(serializers.ModelSerializer):
     class Meta:
         model = ComReply
-        fields = ('content', 'created_at')
+        fields = ('content', 'created_at', 'id')
 
 class MainPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = MainPost
-        fields = ('title', 'updated_at')
+        fields = ('title', 'updated_at', 'id')
 
 class ComPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = ComPost
-        fields = ('title', 'updated_at')
+        fields = ('title', 'updated_at', 'id')
 
 class CombinedSerializer(serializers.Serializer):
     jebo_true_posts = MainPostSerializer(many=True)
