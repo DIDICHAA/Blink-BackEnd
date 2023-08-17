@@ -40,7 +40,7 @@ class ComPostSerializer(serializers.ModelSerializer):
             'comcomments',
             'comcomments_cnt',
             'medias',
-            'like_cnt'
+            'like_cnt',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'like_cnt', 'writer', 'comcomments_cnt', 'comcomments']
 
