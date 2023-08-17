@@ -44,6 +44,7 @@ class MainPostSerializer(serializers.ModelSerializer):
             'title',
             'created_at',
             'updated_at',
+            'filmed_at',
             'category',
             'jebo_bool',
             'writer',
@@ -85,6 +86,7 @@ class MainPostListSerializer(serializers.ModelSerializer):
             'content',
             'created_at',
             'updated_at',
+            'filmed_at',
             'comments_cnt',
         ]
 

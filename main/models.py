@@ -20,7 +20,7 @@ class MainPost(models.Model):
     lat = models.FloatField(blank=True, null=True)
     lng = models.FloatField(blank=True, null=True)
     location = models.CharField(max_length=300, blank=True, null=True)
-    # filmed_at = 
+    filmed_at = models.IntegerField(blank=True, null=True)
 
 class MainComment(models.Model):
     id = models.AutoField(primary_key=True)
