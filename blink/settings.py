@@ -72,6 +72,20 @@ INSTALLED_APPS = [
     'allauth.account',
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    # 필요한 경우 다른 도메인도 추가
+]
+
+# 요청에 사용되는 헤더가 있다면 아래 리스트에 추가
+CORS_ALLOW_HEADERS = [
+    "withcredentials",
+    # 다른 헤더들
+]
+
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
