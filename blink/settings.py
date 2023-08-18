@@ -78,6 +78,9 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:8000",
+    "http://43.201.165.28:5173",
+    "http://43.201.165.28:8000",
+    "http://34.201.165.28"
     # 필요한 경우 다른 도메인도 추가
 ]
 
