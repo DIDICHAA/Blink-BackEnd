@@ -84,7 +84,8 @@ CORS_ALLOWED_ORIGINS = [
 # 요청에 사용되는 헤더가 있다면 아래 리스트에 추가
 CORS_ALLOW_HEADERS = [
     "withcredentials",
-    # 다른 헤더들
+    "content-type",
+    "authorization", 
 ]
 
 
@@ -130,22 +131,25 @@ SIMPLE_JWT = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
+
 ]
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",  # 클라이언트의 주소
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://43.201.165.28",
+    "http://43.201.165.28:5173",
 ]
 
 ROOT_URLCONF = 'blink.urls'
