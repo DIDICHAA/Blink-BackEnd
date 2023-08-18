@@ -3,12 +3,14 @@ from .models import *
 
 # 다중 파일에 사용하는 serializer
 class MainPostMediaSerializer(serializers.ModelSerializer):
+    media = serializers.FileField(use_url=True, required=False)
     class Meta:
         model = MainPostMedia
         fields = ['media']
 
 class MainCommentMediaSerializer(serializers.ModelSerializer):
-    class MEta:
+    media = serializers.FileField(use_url=True, required=False) 
+    class Meta:
         model = MainCommentMedia
         fields = ['media']
 
