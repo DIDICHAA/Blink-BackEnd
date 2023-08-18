@@ -19,21 +19,27 @@ class ProfileUpdateSerializer(UserDetailsSerializer):
     def validate(self, data):
         new_password = data.get('new_password')
         new_password_confirm = data.get('new_password_confirm')
+        old_password = data.get('old_password') 
 
         if new_password or new_password_confirm:
-            if new_password != new_password_confirm:
-                raise serializers.ValidationError("새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다.")
-            
-            # 기존 비밀번호 확인 로직 추가
-            old_password = data.get('old_password') 
+            if not old_password:
+                raise serializers.ValidationError("기존 비밀번호를 입력해주세요.")
             if not self.instance.check_password(old_password):
                 raise serializers.ValidationError("기존 비밀번호가 일치하지 않습니다.")
-            
-            # 새 비밀번호 저장 로직 추가
-            self.instance.set_password(new_password)
-            self.instance.save()
+            if new_password != new_password_confirm:
+                raise serializers.ValidationError("새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다.")
 
         return data
+
+    def update(self, instance, validated_data):
+        if 'new_password' in validated_data:
+            instance.set_password(validated_data['new_password'])
+            validated_data.pop('new_password')
+        validated_data.pop('old_password', None)
+        validated_data.pop('new_password_confirm', None)
+
+        return super(ProfileUpdateSerializer, self).update(instance, validated_data)
+
 
 #---------여기부터 활동관리-------------------
 #-----------------------------------------
