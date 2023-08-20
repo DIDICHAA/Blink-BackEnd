@@ -21,6 +21,7 @@ class MainPost(models.Model):
     lng = models.FloatField(blank=True, null=True)
     location = models.CharField(max_length=300, blank=True, null=True)
     filmed_at = models.IntegerField(blank=True, null=True)
+    media = models.CharField(max_length=5000, blank=True, null=True) #, blank=True, null=True 필요하면 집어넣기
 
 class MainComment(models.Model):
     id = models.AutoField(primary_key=True)
@@ -28,6 +29,7 @@ class MainComment(models.Model):
     content = models.TextField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     mainpost = models.ForeignKey(MainPost, blank=False, null=False, on_delete=models.CASCADE, related_name='comments')
+    media = models.CharField(max_length=5000, blank=True, null=True) #, blank=True, null=True 필요하면 집어넣기
 
 class MainReply(models.Model):
     id = models.AutoField(primary_key=True)
@@ -35,11 +37,3 @@ class MainReply(models.Model):
     content = models.TextField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     maincomment = models.ForeignKey(MainComment, blank=False, null=False, on_delete=models.CASCADE, related_name='replies')
-
-class MainPostMedia(models.Model):
-    mainpost = models.ForeignKey(MainPost, on_delete=models.CASCADE, related_name='medias')
-    media = models.FileField(upload_to='mainpost_media/', blank=True, null=True) #, blank=True, null=True 필요하면 집어넣기
-
-class MainCommentMedia(models.Model):
-    MainComment = models.ForeignKey(MainComment, on_delete=models.CASCADE, related_name = 'medias')
-    media = models.FileField(upload_to='maincomment_media/', blank=True, null=True) #, blank=True, null=True 필요하면 집어넣기

@@ -1,18 +1,6 @@
 from rest_framework import serializers
 from .models import *
 
-# 다중 파일에 사용하는 serializer
-class MainPostMediaSerializer(serializers.ModelSerializer):
-    media = serializers.FileField(use_url=True, required=False)
-    class Meta:
-        model = MainPostMedia
-        fields = ['media']
-
-class MainCommentMediaSerializer(serializers.ModelSerializer):
-    media = serializers.FileField(use_url=True, required=False) 
-    class Meta:
-        model = MainCommentMedia
-        fields = ['media']
 
 # /mainposts, 
 # /mainposts/<int:mainpost_id> 
@@ -20,23 +8,16 @@ class MainCommentMediaSerializer(serializers.ModelSerializer):
 class MainPostSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     comments = serializers.SerializerMethodField()
-    medias = MainPostMediaSerializer(many=True, required=False)
     jebo_bool = serializers.BooleanField()
 
     def get_comments(self, instance):
         serializers = MainCommentSerializer(instance.comments, many=True)
         return serializers.data
     
-    def get_medias(self, instance):
-        serializers = MainPostSerializer(instance.medias, many=True)
-        return serializers.data
-    
     def create(self, validated_data):
-        medias_data = self.context['request'].FILES
         writer_id = self.context['request'].user.id  # 현재 로그인한 사용자의 ID를 가져옴
         mainpost = MainPost.objects.create(writer_id=writer_id, **validated_data)  # 작성자 ID를 포함하여 MainPost 생성
-        for media_data in medias_data.getlist('media'):
-            MainPostMedia.objects.create(mainpost=mainpost, media=media_data)
+
         return mainpost
     class Meta:
         model = MainPost
@@ -55,7 +36,7 @@ class MainPostSerializer(serializers.ModelSerializer):
             'location',
             'content',
             'comments',
-            'medias',
+            'media',
             # location, category, filmed_at 차후 수정예정
         ]
         # 읽기전용 필드 목록
@@ -113,22 +94,14 @@ class MainCommentSerializer(serializers.ModelSerializer):
     writer = serializers.CharField(source='writer.nickname', read_only=True)
     content = serializers.CharField()
     replies = serializers.SerializerMethodField()
-    medias = MainCommentMediaSerializer(many=True, required=False)
 
     def get_replies(self, instance):
         serializers = MainReplySerializer(instance.replies, many=True)
         return serializers.data
-    
-    def get_medias(self, instance):
-        serializers = MainPostSerializer(instance.medias, many=True)
-        return serializers.data
 
     def create(self, validated_data):
-        medias_data = self.context['request'].FILES
         writer_id = self.context['request'].user.id  # 현재 로그인한 사용자의 ID를 가져옴
         maincomment = MainComment.objects.create(writer_id=writer_id, **validated_data)  # 작성자 ID를 포함하여 MainPost 생성
-        for media_data in medias_data.getlist('media'):
-            MainCommentMedia.objects.create(maincomment=maincomment, media=media_data)
         return maincomment
     
     class Meta:
@@ -140,7 +113,7 @@ class MainCommentSerializer(serializers.ModelSerializer):
             'content',
             'created_at',
             'mainpost',
-            'medias',
+            'media',
             'replies',
         ]
         read_only_fields = [
